@@ -1,5 +1,42 @@
 import { VoiceAgentWithStats } from '@/types/voice-agent.types';
-import { api } from './api';
+
+// Create custom API methods for voice agents
+const API_BASE_URL = '/api/v1';
+
+// Helper function for API requests
+async function fetchApi<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const token = localStorage.getItem('auth_token');
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Network error' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
+  }
+}
 
 export interface VoiceAgentCreationParams {
   name: string;
@@ -81,8 +118,10 @@ class VoiceAgentsEnhancedService {
   // Create a new voice agent
   async createVoiceAgent(params: VoiceAgentCreationParams): Promise<VoiceAgentResponse> {
     try {
-      const response = await api.post('/voice-agents/', params);
-      return response.data;
+      return await fetchApi<VoiceAgentResponse>('/voice-agents/', {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
     } catch (error) {
       console.error('Error creating voice agent:', error);
       throw error;
@@ -92,8 +131,7 @@ class VoiceAgentsEnhancedService {
   // List all voice agents for the current user
   async listVoiceAgents(offset = 0, limit = 10): Promise<VoiceAgentResponse[]> {
     try {
-      const response = await api.get(`/voice-agents/?offset=${offset}&limit=${limit}`);
-      return response.data;
+      return await fetchApi<VoiceAgentResponse[]>(`/voice-agents/?offset=${offset}&limit=${limit}`);
     } catch (error) {
       console.error('Error listing voice agents:', error);
       throw error;
@@ -103,8 +141,7 @@ class VoiceAgentsEnhancedService {
   // Get a specific voice agent
   async getVoiceAgent(agentId: string): Promise<VoiceAgentResponse> {
     try {
-      const response = await api.get(`/voice-agents/${agentId}`);
-      return response.data;
+      return await fetchApi<VoiceAgentResponse>(`/voice-agents/${agentId}`);
     } catch (error) {
       console.error(`Error getting voice agent ${agentId}:`, error);
       throw error;
@@ -114,8 +151,10 @@ class VoiceAgentsEnhancedService {
   // Update a voice agent
   async updateVoiceAgent(agentId: string, params: VoiceAgentUpdateParams): Promise<VoiceAgentResponse> {
     try {
-      const response = await api.put(`/voice-agents/${agentId}`, params);
-      return response.data;
+      return await fetchApi<VoiceAgentResponse>(`/voice-agents/${agentId}`, {
+        method: 'PUT',
+        body: JSON.stringify(params)
+      });
     } catch (error) {
       console.error(`Error updating voice agent ${agentId}:`, error);
       throw error;
@@ -125,8 +164,9 @@ class VoiceAgentsEnhancedService {
   // Delete a voice agent
   async deleteVoiceAgent(agentId: string): Promise<{ message: string }> {
     try {
-      const response = await api.delete(`/voice-agents/${agentId}`);
-      return response.data;
+      return await fetchApi<{ message: string }>(`/voice-agents/${agentId}`, {
+        method: 'DELETE'
+      });
     } catch (error) {
       console.error(`Error deleting voice agent ${agentId}:`, error);
       throw error;
@@ -139,8 +179,10 @@ class VoiceAgentsEnhancedService {
     params: VoiceInteractionParams
   ): Promise<VoiceInteractionResponse> {
     try {
-      const response = await api.post(`/voice-agents/${agentId}/interactions`, params);
-      return response.data;
+      return await fetchApi<VoiceInteractionResponse>(`/voice-agents/${agentId}/interactions`, {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
     } catch (error) {
       console.error(`Error creating interaction with agent ${agentId}:`, error);
       throw error;
@@ -154,10 +196,9 @@ class VoiceAgentsEnhancedService {
     limit = 10
   ): Promise<VoiceInteractionResponse[]> {
     try {
-      const response = await api.get(
+      return await fetchApi<VoiceInteractionResponse[]>(
         `/voice-agents/${agentId}/interactions?offset=${offset}&limit=${limit}`
       );
-      return response.data;
     } catch (error) {
       console.error(`Error listing interactions for agent ${agentId}:`, error);
       throw error;
@@ -167,8 +208,7 @@ class VoiceAgentsEnhancedService {
   // Get metrics for a voice agent
   async getAgentMetrics(agentId: string): Promise<VoiceAgentMetricsResponse> {
     try {
-      const response = await api.get(`/voice-agents/${agentId}/metrics`);
-      return response.data;
+      return await fetchApi<VoiceAgentMetricsResponse>(`/voice-agents/${agentId}/metrics`);
     } catch (error) {
       console.error(`Error getting metrics for agent ${agentId}:`, error);
       throw error;

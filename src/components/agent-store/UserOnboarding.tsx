@@ -388,7 +388,7 @@ export function UserOnboarding({ isOpen, onComplete }: UserOnboardingProps) {
   
   return (
     <Dialog open={isOpen}>
-      <DialogContent className="sm:max-w-[600px] p-0" hideCloseButton={true}>
+      <DialogContent className="sm:max-w-[600px] p-0">
         <div className="bg-gradient-to-r from-quantum-50 to-neural-50 dark:from-gray-900 dark:to-gray-800 p-6">
           <div className="flex items-start gap-4">
             <div className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow">

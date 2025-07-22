@@ -52,3 +52,26 @@ export interface VoiceAgentCreationData {
   isActive?: boolean;
   isDemo?: boolean; // Added isDemo property to match usage in code
 }
+
+export interface VoiceAgentWithStats {
+  id: string;
+  name: string;
+  description: string;
+  avatarUrl: string;
+  voiceId: string;
+  voiceProvider: string;
+  model: string;
+  systemPrompt: string;
+  created: string;
+  stats: {
+    totalInteractions: number;
+    avgResponseTime: number;
+    rating: number;
+  };
+  isActive: boolean;
+  settings: {
+    temperature: number;
+    maxTokens: number;
+    [key: string]: any;
+  };
+}
