@@ -1,0 +1,171 @@
+
+/* Base styles for the workflow builder */
+.workflow-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.workflow-header {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.workflow-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.workflow-debug-panel {
+  max-height: 30%;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding: 0.5rem;
+  background-color: var(--bg-color-secondary, white);
+}
+
+.workflow-sidebar {
+  width: 280px;
+  padding: 1rem;
+  border-right: 1px solid var(--border-color, #e2e8f0);
+  background-color: var(--bg-color-secondary, white);
+  overflow-y: auto;
+}
+
+.workflow-footer {
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding: 0.5rem;
+}
+
+.workflow-performance-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.workflow-performance-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  border-radius: 8px;
+}
+
+.react-flow__node-input,
+.react-flow__node-aiModel,
+.react-flow__node-processing,
+.react-flow__node-output,
+.react-flow__node-voiceToAgent {
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 180px;
+}
+
+.react-flow__node-input {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.react-flow__node-aiModel {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.react-flow__node-processing {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.react-flow__node-advancedProcessing {
+  background-color: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.react-flow__node-output {
+  background-color: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.react-flow__node-voiceToAgent {
+  background-color: rgba(236, 72, 153, 0.1);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+/* Dark mode styles */
+.dark .workflow-debug-panel,
+.dark .workflow-sidebar,
+.dark .workflow-performance-container {
+  background-color: var(--bg-color-secondary-dark, #1e293b);
+  color: white;
+}
+
+.dark .react-flow__node-input,
+.dark .react-flow__node-aiModel,
+.dark .react-flow__node-processing,
+.dark .react-flow__node-output,
+.dark .react-flow__node-voiceToAgent {
+  color: white;
+}
+
+.dark .react-flow__node-input {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+.dark .react-flow__node-aiModel {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .react-flow__node-processing {
+  background-color: rgba(245, 158, 11, 0.2);
+}
+
+.dark .react-flow__node-output {
+  background-color: rgba(139, 92, 246, 0.2);
+}
+
+.dark .react-flow__node-voiceToAgent {
+  background-color: rgba(236, 72, 153, 0.2);
+}
+
+/* Demo node styles */
+.demo-node-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.demo-node-content {
+  font-size: 0.875rem;
+}
+
+.demo-node-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #666;
+}
