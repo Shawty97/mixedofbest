@@ -5,88 +5,43 @@
 
 @layer base {
   :root {
-    /* Base colors */
-    --background: 220 29% 97%;
-    --foreground: 224 71% 4%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 222 84% 4.9%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 84% 4.9%;
-    
-    /* AI/Quantum theme colors */
-    --primary: 246 88% 60%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 215 27% 91%;
-    --secondary-foreground: 222 47% 11%;
-    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    
-    --accent: 240 6% 90%;
-    --accent-foreground: 224 71% 4%;
-    
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 252 87% 67%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 9.1% 11.8%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 84.9%;
+
+    --accent: 252 87% 67%;
+    --accent-foreground: 0 0% 98%;
+
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5% 15.9%;
+    --input: 240 5% 15.9%;
+    --ring: 252 87% 67%;
     --radius: 0.5rem;
-    
-    /* Sidebar specific colors */
-    --sidebar-background: 223 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 252 87% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 224.3 76.3% 48%;
-  }
-  
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    
-    /* AI/Quantum theme colors for dark mode */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    
-    /* Sidebar dark mode colors */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 27.9% 16.9%;
-    --sidebar-ring: 224.3 76.3% 48%;
+    --sidebar-accent: 240 9.1% 11.8%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 15.9%;
+    --sidebar-ring: 252 87% 67%;
   }
 }
 
@@ -94,23 +49,36 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
 
-@layer components {
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-quantum-600 to-neural-600;
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-ai-blue via-ai-purple to-ai-pink animate-gradient-shift;
+    background-size: 300% 100%;
+  }
+
+  .card-gradient {
+    @apply bg-gradient-to-br from-secondary to-secondary/70 hover:from-accent/20 hover:to-secondary/70 transition-all duration-300;
+    background-size: 200% 200%;
   }
   
-  .quantum-card {
-    @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300;
+  .glow {
+    @apply relative;
   }
   
-  .code-block {
-    @apply bg-gray-100 dark:bg-gray-800 rounded-md p-4 overflow-x-auto font-mono text-sm;
+  .glow::after {
+    content: "";
+    @apply absolute -inset-0.5 rounded-lg bg-gradient-to-r from-ai-purple to-ai-blue opacity-50 blur pointer-events-none;
+  }
+
+  .glass {
+    @apply bg-secondary/30 backdrop-blur-md border border-white/10;
+  }
+  
+  .agent-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
   }
 }
