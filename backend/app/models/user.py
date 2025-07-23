@@ -20,3 +20,4 @@ class User(Base):
     # Relationships
     workspaces = relationship("Workspace", back_populates="owner")
     workflows = relationship("Workflow", back_populates="user")
+    agents = relationship("Agent", back_populates="user")

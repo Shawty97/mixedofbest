@@ -1,6 +1,7 @@
 
 from typing import Any, Dict, Optional
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
+from pydantic import field_validator
 import os
 from pathlib import Path
 
@@ -20,11 +21,21 @@ class Settings(BaseSettings):
     AZURE_OPENAI_API_KEY: Optional[str] = None
     AZURE_OPENAI_ENDPOINT: Optional[str] = None
     
+    # LiveKit Configuration
+    LIVEKIT_URL: Optional[str] = None
+    LIVEKIT_API_KEY: Optional[str] = None
+    LIVEKIT_API_SECRET: Optional[str] = None
+    
+    # Azure Speech Configuration
+    AZURE_SPEECH_KEY: Optional[str] = None
+    AZURE_SPEECH_REGION: Optional[str] = None
+    
     # Environment
     ENVIRONMENT: str = "development"
     
-    @validator("DATABASE_URL", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> str:
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: Optional[str]) -> str:
         if isinstance(v, str):
             return v
         # Default to SQLite for demo
@@ -32,13 +43,14 @@ class Settings(BaseSettings):
         db_path.parent.mkdir(exist_ok=True)
         return f"sqlite:///{db_path}"
     
-    @validator("DEMO_MODE", pre=True)
-    def check_demo_mode(cls, v: Optional[bool], values: Dict[str, Any]) -> bool:
+    @field_validator("DEMO_MODE", mode="before")
+    @classmethod
+    def check_demo_mode(cls, v: Optional[bool], info) -> bool:
         if v is not None:
             return v
         # Auto-detect demo mode based on SQLite usage
-        database_url = values.get("DATABASE_URL", "")
-        return "sqlite" in database_url.lower()
+        database_url = info.data.get("DATABASE_URL", "")
+        return "sqlite" in str(database_url).lower()
     
     class Config:
         case_sensitive = True

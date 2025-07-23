@@ -77,7 +77,7 @@ class WorkflowRun(BaseModel):
     error_message: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Workflow(WorkflowBase):
@@ -89,4 +89,4 @@ class Workflow(WorkflowBase):
     version: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

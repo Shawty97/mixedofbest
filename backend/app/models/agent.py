@@ -2,8 +2,25 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, Text, Float, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from typing import Dict, Any, List, Optional
+from pydantic import BaseModel
 
 from app.core.database import Base
+
+
+class AgentConfig(BaseModel):
+    """Configuration class for agent runtime"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    instructions: str = "You are a helpful assistant."
+    capabilities: List[str] = []
+    webhook_url: Optional[str] = None
+    ending_message: Optional[str] = None
+    voice_settings: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        from_attributes = True
 
 
 class Agent(Base):

@@ -15,7 +15,7 @@ class KnowledgeSource(Base):
     type = Column(String, nullable=False)  # file, url
     source_uri = Column(String, nullable=False)  # File path or URL
     status = Column(String, default="uploaded")  # uploaded, processing, ready, error
-    metadata = Column(JSON)  # File size, content type, etc.
+    source_metadata = Column(JSON)  # File size, content type, etc.
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -31,7 +31,7 @@ class KnowledgeChunk(Base):
     source_id = Column(Integer, ForeignKey("knowledge_sources.id"), nullable=False)
     content = Column(Text, nullable=False)
     embedding = Column(LargeBinary)  # Stored as binary for efficiency
-    metadata = Column(JSON)  # Chunk metadata (position, etc.)
+    chunk_metadata = Column(JSON)  # Chunk metadata (position, etc.)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
