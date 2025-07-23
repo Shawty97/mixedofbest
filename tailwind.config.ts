@@ -64,6 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				// AImpact specific colors
+				'ai-blue': 'hsl(var(--ai-blue))',
+				'ai-purple': 'hsl(var(--ai-purple))',
+				'ai-pink': 'hsl(var(--ai-pink))',
 				quantum: {
 					50: '#f0f7ff',
 					100: '#e0effe',
@@ -113,12 +116,22 @@ export default {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' },
 				},
+				'gradient-shift': {
+					'0%, 100%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+				},
+				'pulse-glow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'float': 'float 6s ease-in-out infinite',
+				'gradient-shift': 'gradient-shift 3s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

@@ -42,6 +42,11 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 5% 15.9%;
     --sidebar-ring: 252 87% 67%;
+
+    /* AImpact Brand Colors */
+    --ai-blue: 214 100% 70%;
+    --ai-purple: 252 87% 67%;
+    --ai-pink: 322 76% 68%;
   }
 }
 
