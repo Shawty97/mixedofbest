@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PenTool, Store, Server, Rocket, BarChart3 } from "lucide-react";
 
 const Navbar: React.FC = () => {
   return (

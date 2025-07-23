@@ -11,7 +11,7 @@ import {
   RotateCcw, 
   Activity, 
   Cpu, 
-  Memory, 
+  Database, 
   HardDrive,
   Network
 } from "lucide-react";
@@ -103,7 +103,7 @@ const AgentEngine = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Memory</CardTitle>
-                  <Memory className="h-4 w-4 text-muted-foreground" />
+                  <Database className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{systemMetrics.memory}%</div>
