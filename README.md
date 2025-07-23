@@ -40,63 +40,95 @@ AImpact Platform follows a **6-Layer Enterprise Architecture** designed for scal
 ## 📁 Project Structure
 
 mixedofbest/
-├── 📁 frontend/                    # React TypeScript Application
-│   ├── 📁 src/
-│   │   ├── 📁 components/
-│   │   │   ├── 📁 layout/          # Navigation, headers, footers
-│   │   │   └── 📁 studio/          # Agent building components
-│   │   ├── 📁 pages/               # 6-Layer Architecture Pages
-│   │   │   ├── 🎨 Studio.tsx       # Layer 1: Agent Builder
-│   │   │   ├── 🏪 Store.tsx        # Layer 2: Agent Marketplace
-│   │   │   ├── ⚙️ Engine.tsx       # Layer 3: Runtime Engine
-│   │   │   ├── 🚀 Deploy.tsx       # Layer 4: Deployment Center
-│   │   │   ├── 📊 Monitor.tsx      # Layer 5: Observability
-│   │   │   └── 🔐 Access.tsx       # Layer 6: Access Control
-│   │   └── 📄 App.tsx              # Main application router
-│   └── 📄 package.json             # Frontend dependencies
+├── 📄 .gitignore                   # Git ignore patterns
+├── 📄 README.md                    # Project documentation
+├── 📄 package.json                 # Root package configuration
+├── 🐳 docker-compose.yml           # Multi-service deployment
 │
 ├── 📁 backend/                     # FastAPI Python Backend
-│   ├── 📁 app/
-│   │   ├── 📁 api/                 # REST API endpoints
-│   │   │   └── 📁 v1/              # API version 1
-│   │   │       ├── 🎨 agents.py    # Agent CRUD operations
-│   │   │       ├── 🏪 store.py     # Marketplace APIs
-│   │   │       ├── ⚙️ engine.py    # Runtime management
-│   │   │       ├── 🚀 deploy.py    # Deployment APIs
-│   │   │       ├── 📊 monitor.py   # Analytics APIs
-│   │   │       └── 🔐 access.py    # User management
-│   │   ├── 📁 core/                # Core business logic
-│   │   │   ├── 🤖 agent_engine.py  # Voice agent runtime
-│   │   │   ├── 🔒 security.py      # JWT authentication
-│   │   │   └── ⚙️ config.py        # Configuration management
-│   │   ├── 📁 models/              # Database models
-│   │   ├── 📁 schemas/             # API schemas
-│   │   └── 📁 services/            # Business services
+│   ├── 📄 .env.example             # Environment variables template
+│   ├── 📄 README.md                # Backend documentation
+│   ├── 📄 requirements.txt         # Python dependencies
+│   ├── 📄 start_server.py          # Development server
+│   ├── 📄 test_backend.py          # Backend tests
+│   ├── 📄 alembic.ini              # Database migration config
 │   ├── 📁 alembic/                 # Database migrations
-│   └── 📄 requirements.txt         # Python dependencies
+│   │   ├── 📄 env.py               # Migration environment
+│   │   ├── 📄 script.py.mako       # Migration template
+│   │   └── 📁 versions/            # Migration files
+│   └── 📁 app/                     # Main application
+│       ├── 📄 init .py
+│       ├── 📄 main.py              # FastAPI application entry
+│       ├── 📁 api/                 # REST API endpoints
+│       ├── 📁 core/                # Core business logic
+│       ├── 📁 models/              # Database models
+│       ├── 📁 schemas/             # API schemas
+│       └── 📁 services/            # Business services
 │
-├── 📁 supabase/                    # Database & Edge Functions
-│   ├── 📁 migrations/              # SQL schema migrations
-│   └── 📁 functions/               # Serverless edge functions
-│       ├── 🤖 ai-chat/             # AI conversation processing
-│       ├── 🎙️ elevenlabs-tts/      # Text-to-speech integration
-│       └── 🔍 semantic-search/     # Knowledge base search
+├── 📁 frontend/                    # React TypeScript Application
+│   ├── 📄 components.json          # shadcn/ui configuration
+│   ├── 📄 eslint.config.js         # ESLint configuration
+│   ├── 📄 index.html               # HTML entry point
+│   ├── 📄 package.json             # Frontend dependencies
+│   ├── 📄 package-lock.json        # Dependency lock file
+│   ├── 📄 postcss.config.js        # PostCSS configuration
+│   ├── 📄 tailwind.config.ts       # Tailwind CSS configuration
+│   ├── 📄 tsconfig.json            # TypeScript configuration
+│   ├── 📄 tsconfig.app.json        # App TypeScript config
+│   ├── 📄 tsconfig.node.json       # Node TypeScript config
+│   ├── 📄 vite.config.ts           # Vite build configuration
+│   └── 📁 src/                     # Source code
+│       ├── 📄 App.tsx              # Main application component
+│       ├── 📄 main.tsx             # Application entry point
+│       ├── 📄 index.css            # Global styles
+│       ├── 📁 components/          # Reusable UI components
+│       ├── 📁 hooks/               # Custom React hooks
+│       └── 📁 pages/               # Application pages
+│           ├── 🎨 Studio.tsx       # Agent Builder
+│           ├── 🏪 Store.tsx        # Agent Marketplace
+│           ├── ⚙️ Engine.tsx       # Runtime Engine
+│           ├── 🚀 Deploy.tsx       # Deployment Center
+│           ├── 📊 Monitor.tsx      # Observability
+│           └── 🔐 Access.tsx       # Access Control
 │
-├── 📁 old/                         # Reference implementation
-│   ├── 🤖 agent.py                 # Working voice agent logic
-│   └── 🐳 Dockerfile               # Container configuration
+├── 📁 src/                         # Additional React components
+│   ├── 📄 App.tsx                  # Alternative app entry
+│   ├── 📄 index.css                # Global styles
+│   ├── 📁 components/              # Shared components
+│   │   ├── 📄 Navbar.tsx           # Navigation component
+│   │   ├── 📁 auth/                # Authentication components
+│   │   └── 📁 layout/              # Layout components
+│   └── 📁 pages/                   # Additional pages
+│       ├── 🤖 AgentEngine.tsx      # Agent engine page
+│       ├── 📊 Dashboard.tsx        # Main dashboard
+│       ├── 🚀 DeploymentCenter.tsx # Deployment management
+│       ├── 🏢 OrgManagement.tsx    # Organization management
+│       └── 🔄 Workflows.tsx        # Workflow management
 │
 ├── 📁 public/                      # Static web assets
 │   ├── 🎨 favicon.ico              # Browser icon
 │   ├── 🖼️ placeholder.svg          # Default images
 │   └── 🤖 robots.txt               # SEO configuration
 │
-└── 📄 Configuration Files
-├── 🐳 docker-compose.yml       # Multi-service deployment
-├── ⚙️ vite.config.ts           # Frontend build configuration
-├── 🎨 tailwind.config.ts       # UI styling configuration
-├── 📝 tsconfig.json            # TypeScript configuration
-└── 
+└── 📁 supabase/                    # Database & Edge Functions
+├── 📄 config.toml              # Supabase configuration
+├── 📁 functions/               # Serverless edge functions
+│   ├── 🤖 ai-chat/             # AI conversation processing
+│   ├── 🤖 copilot-chat/        # AI copilot assistance
+│   ├── 📄 document-processor/  # Document processing
+│   ├── 🎙️ elevenlabs-tts/      # Text-to-speech integration
+│   ├── 🔍 semantic-search/     # Knowledge base search
+│   └── 👥 team-execution/      # Team workflow execution
+└── 📁 migrations/              # SQL schema migrations
+├── 🎙️ 20241201000001_create_voice_agents.sql
+├── 🔄 20241201000002_enhance_workflows.sql
+├── 🤖 20241206000001_create_copilot_system.sql
+├── 🔧 20241206000002_create_copilot_rpc_functions.sql
+├── 🎨 20241206000003_create_studio_system.sql
+├── 🏪 20241206000004_create_agent_store.sql
+├── 📚 20241206000005_create_knowledge_system.sql
+├── 📊 20241206000006_create_analytics_system.sql
+└── 🔧 20241206000007_create_agent_store_rpc_functions.sql
 
 
 ## 🎯 Core Features
