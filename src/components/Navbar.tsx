@@ -44,3 +44,11 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+
+const systemNavItems = [
+  { name: 'Studio', href: '/studio', icon: PenTool },
+  { name: 'Store', href: '/store', icon: Store },
+  { name: 'Engine', href: '/engine', icon: Server },
+  { name: 'Deploy', href: '/deploy', icon: Rocket },
+  { name: 'Observability', href: '/observability', icon: BarChart3 },
+];
