@@ -1,142 +1,202 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/use-theme";
+import { Badge } from "@/components/ui/badge";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Brain, 
+  Bot, 
+  Workflow, 
+  Store, 
+  BookOpen, 
+  Mic, 
+  Sparkles, 
+  Settings, 
+  User, 
+  LogOut,
+  Home,
+  BarChart3,
+  Zap
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
-export function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
+const Navbar = () => {
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const [notifications] = useState(3);
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
-
-  const handleSignOut = async () => {
-    await logout();
-  };
-
-  const navItems = [
-    { name: "Dashboard", path: "/" },
-    { name: "Core Platform", path: "/core-platform" },
-    { name: "Studio", path: "/studio" },
-    { name: "Agent Store", path: "/agent-store" },
-    { name: "Voice Agents", path: "/voice-agents" },
-    { name: "Knowledge Builder", path: "/knowledge-builder" },
-    { name: "AI Copilot", path: "/ai-copilot" },
-    { name: "Docs", path: "/docs" },
+  const navigationItems = [
+    {
+      title: "Platform",
+      items: [
+        { title: "Dashboard", href: "/", icon: Home, description: "Overview and quick access" },
+        { title: "Core Platform", href: "/core-platform", icon: Brain, description: "AI Workflow Creator with DAG orchestration" },
+        { title: "Analytics", href: "/analytics", icon: BarChart3, description: "Performance insights and metrics" },
+      ]
+    },
+    {
+      title: "AI Agents",
+      items: [
+        { title: "AI Studio", href: "/studio", icon: Bot, description: "Create and manage AI agents" },
+        { title: "Agent Store", href: "/agent-store", icon: Store, description: "Discover and share AI agents" },
+        { title: "Voice Agents", href: "/voice-agents", icon: Mic, description: "Voice-enabled AI assistants" },
+      ]
+    },
+    {
+      title: "Tools",
+      items: [
+        { title: "Knowledge Builder", href: "/knowledge-builder", icon: BookOpen, description: "Build intelligent knowledge bases" },
+        { title: "AI Copilot", href: "/ai-copilot", icon: Sparkles, description: "AI-powered development assistant" },
+        { title: "Workflow Engine", href: "/workflows", icon: Workflow, description: "Advanced workflow automation" },
+      ]
+    }
   ];
 
+  const isActive = (href: string) => {
+    if (href === "/" && location.pathname === "/") return true;
+    return href !== "/" && location.pathname.startsWith(href);
+  };
+
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="h-8 w-8 bg-gradient-to-r from-quantum-600 to-neural-600 rounded-md flex items-center justify-center mr-2">
-                <span className="text-white font-bold text-lg">A</span>
-              </span>
-              <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-quantum-600 to-neural-600">
-                AImpact
-              </span>
-            </Link>
-            <div className="hidden md:ml-8 md:flex md:space-x-8">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-quantum-600 dark:hover:text-quantum-400"
-                >
-                  {item.name}
-                </Link>
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-quantum-600 to-neural-600">
+            <Zap className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-xl font-bold">AImpact</span>
+          <Badge variant="secondary" className="text-xs">Platform</Badge>
+        </Link>
+
+        {/* Navigation Menu */}
+        <div className="hidden md:flex">
+          <NavigationMenu>
+            <NavigationMenuList>
+              {navigationItems.map((section) => (
+                <NavigationMenuItem key={section.title}>
+                  <NavigationMenuTrigger className="text-sm font-medium">
+                    {section.title}
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {section.items.map((item) => (
+                        <NavigationMenuLink key={item.title} asChild>
+                          <Link
+                            to={item.href}
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                              isActive(item.href) && "bg-accent text-accent-foreground"
+                            )}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <item.icon className="h-4 w-4" />
+                              <div className="text-sm font-medium leading-none">
+                                {item.title}
+                              </div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
               ))}
-            </div>
-          </div>
-          <div className="flex items-center">
-            {user ? (
-              <Button
-                variant="ghost"
-                onClick={handleSignOut}
-                className="mr-4 flex items-center"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </Button>
-            ) : (
-              <Link to="/auth">
-                <Button
-                  variant="ghost"
-                  className="mr-4 flex items-center"
-                >
-                  <LogIn className="mr-2 h-4 w-4" />
-                  <span>Login</span>
-                </Button>
-              </Link>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+
+        {/* Right side */}
+        <div className="flex items-center space-x-4">
+          {/* Notifications */}
+          <Button variant="ghost" size="icon" className="relative">
+            <Sparkles className="h-5 w-5" />
+            {notifications > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs">
+                {notifications}
+              </Badge>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="ml-1"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <div className="md:hidden ml-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMobileMenu}
-                aria-label="Open menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
+          </Button>
+
+          {/* User Menu */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.name || user.email} />
+                    <AvatarFallback>
+                      {(user.user_metadata?.name || user.email)?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user.user_metadata?.name || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/auth">Get Started</Link>
               </Button>
             </div>
-          </div>
+          )}
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            {!user && (
-              <Link
-                to="/auth"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
-}
+};
 
 export default Navbar;
