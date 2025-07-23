@@ -63,12 +63,33 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				ai: {
-					blue: '#3b82f6',
-					indigo: '#6366f1',
-					purple: '#8b5cf6',
-					pink: '#ec4899',
-				}
+				// AImpact specific colors
+				quantum: {
+					50: '#f0f7ff',
+					100: '#e0effe',
+					200: '#bae2fd',
+					300: '#7ccefb',
+					400: '#36b3f6',
+					500: '#0c99e6',
+					600: '#0072c3',
+					700: '#005a9e',
+					800: '#064d87',
+					900: '#0a4072',
+					950: '#062547',
+				},
+				neural: {
+					50: '#f5f3ff',
+					100: '#ede8ff',
+					200: '#dcd6ff',
+					300: '#c3b5fd',
+					400: '#a68df9',
+					500: '#8b5cf6',
+					600: '#7c3aed',
+					700: '#6d28d9',
+					800: '#5b21b6',
+					900: '#4c1d95',
+					950: '#2e1065',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -77,22 +98,14 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
 				},
-				'pulse-glow': {
+				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.7' },
 				},
@@ -100,23 +113,17 @@ export default {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' },
 				},
-				'gradient-shift': {
-					'0%': { backgroundPosition: '0% 50%' },
-					'50%': { backgroundPosition: '100% 50%' },
-					'100%': { backgroundPosition: '0% 50%' },
-				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+				'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'float': 'float 6s ease-in-out infinite',
-				'gradient-shift': 'gradient-shift 5s ease infinite',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-glow': 'linear-gradient(to right, #4f46e5, #8b5cf6, #4f46e5)',
-			}
+				'grid-pattern': 'linear-gradient(to right, #80808015 1px, transparent 1px), linear-gradient(to bottom, #80808015 1px, transparent 1px)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
