@@ -26,19 +26,21 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/landing" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/core-platform" element={<CorePlatform />} />
-            <Route path="/studio" element={<Studio />} />
-            <Route path="/agent-store" element={<AgentStore />} />
-            <Route path="/knowledge-builder" element={<KnowledgeBuilder />} />
-            <Route path="/voice-agents" element={<VoiceAgents />} />
-            <Route path="/ai-copilot" element={<AICopilot />} />
-            <Route path="/workflows" element={<Workflows />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/landing" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/core-platform" element={<CorePlatform />} />
+              <Route path="/studio" element={<Studio />} />
+              <Route path="/agent-store" element={<AgentStore />} />
+              <Route path="/knowledge-builder" element={<KnowledgeBuilder />} />
+              <Route path="/voice-agents" element={<VoiceAgents />} />
+              <Route path="/ai-copilot" element={<AICopilot />} />
+              <Route path="/workflows" element={<Workflows />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
