@@ -56,6 +56,7 @@ const Navbar = () => {
       title: "AI Agents",
       items: [
         { title: "AI Studio", href: "/studio", icon: Bot, description: "Create and manage AI agents" },
+        { title: "Agent Studio", href: "/agent-studio", icon: Mic, description: "Voice agent design and testing" },
         { title: "Agent Store", href: "/agent-store", icon: Store, description: "Discover and share AI agents" },
         { title: "Voice Agents", href: "/voice-agents", icon: Mic, description: "Voice-enabled AI assistants" },
       ]
@@ -63,7 +64,7 @@ const Navbar = () => {
     {
       title: "Tools",
       items: [
-        { title: "Knowledge Builder", href: "/knowledge-builder", icon: BookOpen, description: "Build intelligent knowledge bases" },
+        { title: "Knowledge Builder", href: "/knowledge-builder", icon: BookOpen, description: "Build intelligent knowledge bases with vector embeddings" },
         { title: "AI Copilot", href: "/ai-copilot", icon: Sparkles, description: "AI-powered development assistant" },
         { title: "Workflow Engine", href: "/workflows", icon: Workflow, description: "Advanced workflow automation" },
       ]

@@ -12,6 +12,7 @@ import CorePlatform from "./pages/CorePlatform";
 import Studio from "./pages/Studio";
 import AgentStore from "./pages/AgentStore";
 import KnowledgeBuilder from "./pages/KnowledgeBuilder";
+import AgentStudio from "./pages/AgentStudio";
 import VoiceAgents from "./pages/VoiceAgents";
 import AICopilot from "./pages/AICopilot";
 import Workflows from "./pages/Workflows";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/studio" element={<Studio />} />
               <Route path="/agent-store" element={<AgentStore />} />
               <Route path="/knowledge-builder" element={<KnowledgeBuilder />} />
+              <Route path="/agent-studio" element={<AgentStudio />} />
               <Route path="/voice-agents" element={<VoiceAgents />} />
               <Route path="/ai-copilot" element={<AICopilot />} />
               <Route path="/workflows" element={<Workflows />} />
