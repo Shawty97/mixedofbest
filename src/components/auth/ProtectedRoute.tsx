@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from './AuthProvider';
+import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,11 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Please log in to access this page.</p>
-      </div>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;

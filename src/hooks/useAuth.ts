@@ -1,153 +1,116 @@
-import { useState, useEffect, createContext, useContext } from 'react';
-
-export interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  is_demo_user?: boolean;
-}
+import { useState, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, username: string, full_name?: string) => Promise<void>;
-  logout: () => void;
-  getDemoToken: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// Mock auth hook for demo purposes
-export const useAuthDemo = (): AuthContextType => {
+export function useAuthDemo(): AuthContextType {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data');
-    
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_data');
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       }
-    }
-    
-    setLoading(false);
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
+  const signIn = async (email: string, password: string) => {
     try {
-      // Mock API call - in real app this would call the backend
-      const response = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
       }
+      
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
 
-      const data = await response.json();
-      const userData = {
-        id: data.user_id,
-        email: email,
-        full_name: email.split('@')[0],
-        is_demo_user: data.demo_mode
-      };
-
-      localStorage.setItem('auth_token', data.access_token);
-      localStorage.setItem('user_data', JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      // For demo purposes, allow demo login
-      if (email === 'demo@aimpact.dev' && password === 'demo') {
-        const demoUser = {
-          id: 'demo_user',
-          email: 'demo@aimpact.dev',
-          full_name: 'Demo User',
-          is_demo_user: true
-        };
-        localStorage.setItem('auth_token', 'demo_token');
-        localStorage.setItem('user_data', JSON.stringify(demoUser));
-        setUser(demoUser);
+  const signUp = async (email: string, password: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
-        throw error;
+        toast({
+          title: "Success",
+          description: "Check your email to confirm your account",
+        });
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (email: string, password: string, username: string, full_name?: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username, full_name })
+      
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
       });
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
-      }
-
-      const data = await response.json();
-      const userData = {
-        id: data.user_id,
-        email: email,
-        full_name: full_name || username,
-        is_demo_user: false
-      };
-
-      localStorage.setItem('auth_token', data.access_token);
-      localStorage.setItem('user_data', JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
+      return { error };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+  const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-  };
-
-  const getDemoToken = async () => {
-    const demoUser = {
-      id: 'demo_user',
-      email: 'demo@aimpact.dev',
-      full_name: 'Demo User',
-      is_demo_user: true
-    };
-    localStorage.setItem('auth_token', 'demo_token');
-    localStorage.setItem('user_data', JSON.stringify(demoUser));
-    setUser(demoUser);
+    setSession(null);
   };
 
   return {
     user,
+    session,
     loading,
-    login,
-    register,
-    logout,
-    getDemoToken
+    signIn,
+    signUp,
+    signOut,
   };
-};
+}

@@ -55,6 +55,178 @@ export type Database = {
           },
         ]
       }
+      agent_instances: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          deployment_status: string
+          endpoint_url: string | null
+          environment: string
+          id: string
+          last_activity: string | null
+          metrics: Json
+          name: string
+          runtime_config: Json
+          template_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          deployment_status?: string
+          endpoint_url?: string | null
+          environment?: string
+          id?: string
+          last_activity?: string | null
+          metrics?: Json
+          name: string
+          runtime_config?: Json
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          deployment_status?: string
+          endpoint_url?: string | null
+          environment?: string
+          id?: string
+          last_activity?: string | null
+          metrics?: Json
+          name?: string
+          runtime_config?: Json
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_instances_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agent_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_sessions: {
+        Row: {
+          cost: number | null
+          duration: number | null
+          ended_at: string | null
+          id: string
+          instance_id: string | null
+          metadata: Json
+          session_type: string
+          started_at: string
+          status: string
+          tokens_used: number | null
+          transcript: Json
+          user_id: string | null
+        }
+        Insert: {
+          cost?: number | null
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          instance_id?: string | null
+          metadata?: Json
+          session_type?: string
+          started_at?: string
+          status?: string
+          tokens_used?: number | null
+          transcript?: Json
+          user_id?: string | null
+        }
+        Update: {
+          cost?: number | null
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          instance_id?: string | null
+          metadata?: Json
+          session_type?: string
+          started_at?: string
+          status?: string
+          tokens_used?: number | null
+          transcript?: Json
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_sessions_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agent_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_templates: {
+        Row: {
+          capabilities: Json
+          category: string
+          created_at: string
+          data_sources: Json
+          deployment_config: Json
+          description: string | null
+          id: string
+          is_public: boolean
+          metadata: Json
+          name: string
+          price: number | null
+          schema_definition: Json
+          status: string
+          template_type: string
+          tools: Json
+          updated_at: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          capabilities?: Json
+          category?: string
+          created_at?: string
+          data_sources?: Json
+          deployment_config?: Json
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json
+          name: string
+          price?: number | null
+          schema_definition: Json
+          status?: string
+          template_type?: string
+          tools?: Json
+          updated_at?: string
+          user_id: string
+          version?: string
+        }
+        Update: {
+          capabilities?: Json
+          category?: string
+          created_at?: string
+          data_sources?: Json
+          deployment_config?: Json
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json
+          name?: string
+          price?: number | null
+          schema_definition?: Json
+          status?: string
+          template_type?: string
+          tools?: Json
+          updated_at?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       agents: {
         Row: {
           capabilities: Json | null
@@ -106,6 +278,51 @@ export type Database = {
           voice_id?: string | null
           voice_provider?: string | null
           webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      capabilities: {
+        Row: {
+          category: string
+          configuration_schema: Json
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          is_premium: boolean
+          is_system: boolean
+          name: string
+          provider: string | null
+          schema_definition: Json
+          version: string
+        }
+        Insert: {
+          category: string
+          configuration_schema?: Json
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          is_premium?: boolean
+          is_system?: boolean
+          name: string
+          provider?: string | null
+          schema_definition: Json
+          version?: string
+        }
+        Update: {
+          category?: string
+          configuration_schema?: Json
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_premium?: boolean
+          is_system?: boolean
+          name?: string
+          provider?: string | null
+          schema_definition?: Json
+          version?: string
         }
         Relationships: []
       }
@@ -180,6 +397,166 @@ export type Database = {
           title?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_listings: {
+        Row: {
+          category: string
+          created_at: string
+          demo_url: string | null
+          description: string
+          documentation: string | null
+          downloads: number | null
+          featured: boolean
+          id: string
+          price: number
+          rating: number | null
+          seller_id: string
+          status: string
+          tags: Json
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          demo_url?: string | null
+          description: string
+          documentation?: string | null
+          downloads?: number | null
+          featured?: boolean
+          id?: string
+          price?: number
+          rating?: number | null
+          seller_id: string
+          status?: string
+          tags?: Json
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          demo_url?: string | null
+          description?: string
+          documentation?: string | null
+          downloads?: number | null
+          featured?: boolean
+          id?: string
+          price?: number
+          rating?: number | null
+          seller_id?: string
+          status?: string
+          tags?: Json
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agent_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quantum_jobs: {
+        Row: {
+          completed_at: string | null
+          cost: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          input_data: Json
+          instance_id: string | null
+          job_id: string
+          job_type: string
+          provider: string
+          result_data: Json | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_data: Json
+          instance_id?: string | null
+          job_id: string
+          job_type: string
+          provider: string
+          result_data?: Json | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_data?: Json
+          instance_id?: string | null
+          job_id?: string
+          job_type?: string
+          provider?: string
+          result_data?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quantum_jobs_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agent_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tools: {
+        Row: {
+          category: string
+          configuration_schema: Json
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          implementation_code: string | null
+          is_system: boolean
+          name: string
+          schema_definition: Json
+          version: string
+        }
+        Insert: {
+          category: string
+          configuration_schema?: Json
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          implementation_code?: string | null
+          is_system?: boolean
+          name: string
+          schema_definition: Json
+          version?: string
+        }
+        Update: {
+          category?: string
+          configuration_schema?: Json
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          implementation_code?: string | null
+          is_system?: boolean
+          name?: string
+          schema_definition?: Json
+          version?: string
         }
         Relationships: []
       }
