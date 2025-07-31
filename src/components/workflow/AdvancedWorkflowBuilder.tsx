@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Play, 
   Pause, 
-  Stop, 
+  Square, 
   Settings, 
   Plus,
   Workflow,
@@ -57,7 +57,7 @@ export const AdvancedWorkflowBuilder: React.FC = () => {
       case 'paused':
         return <Pause className="h-4 w-4 text-yellow-500" />;
       case 'stopped':
-        return <Stop className="h-4 w-4 text-red-500" />;
+        return <Square className="h-4 w-4 text-red-500" />;
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-blue-500" />;
       case 'error':
