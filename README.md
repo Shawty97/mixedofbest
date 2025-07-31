@@ -2,7 +2,7 @@
 
 > **A comprehensive platform for building, deploying, and managing intelligent voice agents with enterprise-grade capabilities.**
 
-## 🎯 Vision & Mission
+## 🎯 Vision & Mission (some parts are missing and will be added by Robert. Gliederung.)
 
 **Vision:** To democratize AI voice agent development and deployment, making sophisticated conversational AI accessible to businesses of all sizes.
 
