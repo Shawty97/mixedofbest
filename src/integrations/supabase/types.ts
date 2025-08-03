@@ -55,6 +55,45 @@ export type Database = {
           },
         ]
       }
+      agent_deployments: {
+        Row: {
+          agent_id: string
+          configuration: Json
+          created_at: string
+          deployed_at: string
+          endpoint: string
+          environment: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          configuration: Json
+          created_at?: string
+          deployed_at?: string
+          endpoint: string
+          environment: string
+          id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          configuration?: Json
+          created_at?: string
+          deployed_at?: string
+          endpoint?: string
+          environment?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agent_instances: {
         Row: {
           api_key: string | null
@@ -557,6 +596,36 @@ export type Database = {
           name?: string
           schema_definition?: Json
           version?: string
+        }
+        Relationships: []
+      }
+      universal_agents: {
+        Row: {
+          created_at: string
+          definition: Json
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          definition: Json
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          definition?: Json
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
