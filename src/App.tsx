@@ -16,7 +16,7 @@ import { UniversalStudio } from "./pages/UniversalStudio";
 import { AgentMarketplace } from "./pages/AgentMarketplace"; 
 import AgentDeployment from "./pages/AgentDeployment";
 import AgentMonitoring from "./pages/AgentMonitoring";
-import { QuantumLab } from "./pages/QuantumLab";
+import QuantumLab from "./pages/QuantumLab";
 import KnowledgeBuilder from "./pages/KnowledgeBuilder";
 import VoiceAgents from "./pages/VoiceAgents";
 import AICopilot from "./pages/AICopilot";
