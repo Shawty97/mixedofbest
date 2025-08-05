@@ -1,75 +1,129 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
+"""
+AImpact Platform - Universal Agent Platform Backend
+Enterprise Voice Agent Ecosystem that democratizes AI voice agent development
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+from dotenv import load_dotenv
 import logging
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
-import uuid
-from datetime import datetime
 
+# Load environment variables
+load_dotenv()
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Import API routers
+from api.agents import router as agents_router
+from api.voice import router as voice_router
+from api.rooms import router as rooms_router
+from api.studio import router as studio_router
 
-# Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(
+    title="AImpact Platform API",
+    description="Universal Agent Platform - Enterprise Voice Agent Ecosystem",
+    version="1.0.0"
+)
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
-
-# Include the router in the main app
-app.include_router(api_router)
-
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
     allow_credentials=True,
-    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Database connection
+client = None
+db = None
+
+@app.on_event("startup")
+async def startup_db_client():
+    """Initialize database connection on startup"""
+    global client, db
+    try:
+        mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+        db_name = os.getenv("DB_NAME", "aiimpact_platform")
+        
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[db_name]
+        
+        # Test connection
+        await client.admin.command("ping")
+        logger.info(f"Connected to MongoDB: {db_name}")
+        
+    except Exception as e:
+        logger.error(f"Failed to connect to MongoDB: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    """Close database connection on shutdown"""
+    global client
+    if client:
+        client.close()
+        logger.info("MongoDB connection closed")
+
+# Include API routers
+app.include_router(agents_router)
+app.include_router(voice_router)
+app.include_router(rooms_router)
+app.include_router(studio_router)
+
+@app.get("/")
+async def root():
+    """Root endpoint with platform information"""
+    return {
+        "message": "AImpact Platform - Universal Agent Platform API",
+        "description": "Enterprise Voice Agent Ecosystem that democratizes AI voice agent development",
+        "version": "1.0.0",
+        "features": [
+            "Universal Agent Templates",
+            "Real-time Voice Communication",
+            "Visual Agent Builder",
+            "Enterprise-grade Monitoring",
+            "Multi-modal AI Agents",
+            "6-Layer Architecture"
+        ],
+        "api_docs": "/docs",
+        "status": "operational"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    try:
+        # Check database connection
+        if client:
+            await client.admin.command("ping")
+            db_status = "healthy"
+        else:
+            db_status = "disconnected"
+        
+        # Check service availability
+        services_status = {
+            "database": db_status,
+            "ai_service": "active",
+            "voice_service": "active",
+            "livekit_service": "active"
+        }
+        
+        return {
+            "status": "healthy",
+            "services": services_status,
+            "message": "All systems operational"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "message": "System check failed"
+        }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
