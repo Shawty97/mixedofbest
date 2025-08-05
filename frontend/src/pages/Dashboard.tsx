@@ -16,7 +16,7 @@ import {
   ArrowRight,
   Plus
 } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
