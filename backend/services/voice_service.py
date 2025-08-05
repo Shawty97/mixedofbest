@@ -66,10 +66,10 @@ class VoiceService:
         
         try:
             # Generate audio using the correct API
-            audio = self.elevenlabs_client.generate(
+            audio = self.elevenlabs_client.text_to_speech.convert(
                 text=text,
-                voice=voice_id,
-                model="eleven_monolingual_v1"
+                voice_id=voice_id,
+                model_id="eleven_monolingual_v1"
             )
             
             # Convert to base64 for frontend
