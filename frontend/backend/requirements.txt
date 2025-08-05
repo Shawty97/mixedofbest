@@ -1,0 +1,29 @@
+
+# CORE FRAMEWORK
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic[email]==2.5.0
+pydantic-settings==2.1.0
+
+# DATABASE
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+
+# AUTHENTICATION
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# VOICE & AI (Your working stack)
+livekit>=1.0
+livekit-agents[silero]~=1.0
+livekit-plugins-azure
+azure-cognitiveservices-speech
+openai>=1.0.0
+
+# UTILITIES
+python-dotenv==1.0.0
+python-multipart==0.0.6
+httpx
+qdrant-client
+tiktoken

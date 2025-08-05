@@ -1,69 +1,113 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { 
-  Palette, 
+  Bot, 
   Store, 
-  Zap, 
-  Cloud, 
-  BarChart3, 
-  Shield,
-  Menu
+  Rocket, 
+  Activity, 
+  Atom, 
+  LayoutDashboard,
+  LogOut,
+  User
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-const navigation = [
-  { name: 'Studio', href: '/studio', icon: Palette },
-  { name: 'Store', href: '/store', icon: Store },
-  { name: 'Engine', href: '/engine', icon: Zap },
-  { name: 'Deploy', href: '/deploy', icon: Cloud },
-  { name: 'Monitor', href: '/monitor', icon: BarChart3 },
-  { name: 'Access', href: '/access', icon: Shield },
-];
-
-export default function Navbar() {
+export function Navbar() {
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">AI</span>
-              </div>
-              <span className="font-bold text-xl">AImpact</span>
-            </Link>
-            
-            <div className="hidden md:flex items-center gap-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <Link key={item.name} to={item.href}>
-                    <Button
-                      variant={isActive ? 'default' : 'ghost'}
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.name}
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+  const navigation = [
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Studio', href: '/studio', icon: Bot },
+    { name: 'Marketplace', href: '/marketplace', icon: Store },
+    { name: 'Deploy', href: '/deploy', icon: Rocket },
+    { name: 'Monitor', href: '/monitor', icon: Activity },
+    { name: 'Quantum Lab', href: '/quantum', icon: Atom },
+  ];
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              Settings
-            </Button>
-            <Button size="sm">
-              Account
-            </Button>
+  if (location.pathname === '/auth' || location.pathname === '/landing') {
+    return null;
+  }
+
+  if (!user) {
+    return (
+      <nav className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <Bot className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold">AgentOS</span>
+            </Link>
+          </div>
+          <Link to="/auth">
+            <Button>Sign In</Button>
+          </Link>
+        </div>
+      </nav>
+    );
+  }
+
+  return (
+    <nav className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center space-x-8">
+          <Link to="/" className="flex items-center space-x-2">
+            <Bot className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold">AgentOS</span>
+          </Link>
+          
+          <div className="hidden md:flex space-x-6">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`flex items-center space-x-2 text-sm font-medium transition-colors ${
+                    isActive 
+                      ? 'text-foreground' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback>
+                  {user.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              <span>{user.email}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut()}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </nav>
   );

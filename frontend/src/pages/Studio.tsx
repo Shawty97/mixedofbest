@@ -1,112 +1,66 @@
-import { useState, useEffect } from 'react';
-import { Plus, Play, Save, Settings } from 'lucide-react';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AgentBuilder } from '@/components/studio/AgentBuilder';
-import { AgentTester } from '@/components/studio/AgentTester';
-import { useAgentStore } from '@/hooks/useAgentStore';
+import { Bot, Code, TestTube, Settings } from 'lucide-react';
 
-export default function Studio() {
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const { agents, createAgent, updateAgent, testAgent } = useAgentStore();
-
+const Studio: React.FC = () => {
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Agent List Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Voice Agents</h2>
-            <Button size="sm" onClick={() => createAgent()}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Agent
-            </Button>
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {agents.map((agent) => (
-            <Card 
-              key={agent.id}
-              className={`cursor-pointer transition-colors ${
-                selectedAgent?.id === agent.id ? 'ring-2 ring-blue-500' : ''
-              }`}
-              onClick={() => setSelectedAgent(agent)}
-            >
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{agent.name}</h3>
-                    <p className="text-sm text-gray-500">{agent.description}</p>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button size="sm" variant="ghost">
-                      <Play className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      <Settings className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">AI Studio</h1>
+        <p className="text-muted-foreground">
+          Create and manage intelligent AI agents with advanced capabilities
+        </p>
       </div>
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col">
-        {selectedAgent ? (
-          <Tabs defaultValue="builder" className="flex-1 flex flex-col">
-            <div className="border-b border-gray-200 px-6 py-3">
-              <div className="flex items-center justify-between">
-                <TabsList>
-                  <TabsTrigger value="builder">Builder</TabsTrigger>
-                  <TabsTrigger value="test">Test</TabsTrigger>
-                  <TabsTrigger value="deploy">Deploy</TabsTrigger>
-                </TabsList>
-                <Button onClick={() => updateAgent(selectedAgent)}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Agent
-                </Button>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              Agent Builder
+            </CardTitle>
+            <CardDescription>
+              Create custom AI agents
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full">New Agent</Button>
+          </CardContent>
+        </Card>
 
-            <TabsContent value="builder" className="flex-1 p-6">
-              <AgentBuilder 
-                agent={selectedAgent} 
-                onChange={setSelectedAgent}
-              />
-            </TabsContent>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5" />
+              Code Generator
+            </CardTitle>
+            <CardDescription>
+              AI-powered code generation
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full">Generate</Button>
+          </CardContent>
+        </Card>
 
-            <TabsContent value="test" className="flex-1 p-6">
-              <AgentTester agent={selectedAgent} />
-            </TabsContent>
-
-            <TabsContent value="deploy" className="flex-1 p-6">
-              <div className="text-center text-gray-500">
-                Deployment configuration coming soon...
-              </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Select an agent to start building
-              </h3>
-              <p className="text-gray-500 mb-4">
-                Choose an agent from the sidebar or create a new one
-              </p>
-              <Button onClick={() => createAgent()}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Agent
-              </Button>
-            </div>
-          </div>
-        )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TestTube className="h-5 w-5" />
+              Testing Lab
+            </CardTitle>
+            <CardDescription>
+              Test and validate agents
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full">Test Agent</Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-}
+};
+
+export default Studio;
