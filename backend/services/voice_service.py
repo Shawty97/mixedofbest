@@ -39,14 +39,14 @@ class VoiceService:
             self.speech_config = None
             logger.warning("Azure Speech key not found. STT will be limited.")
         
-        # Voice configurations
+        # Voice configurations - Updated with current ElevenLabs voice IDs
         self.voice_profiles = {
-            "professional_male": "21m00Tcm4TlvDq8ikWAM",  # Rachel
-            "professional_female": "EXAVITQu4vr4RqVRakzK",  # Bella
-            "friendly_male": "pNInz6obpgDQGcFmaJgB",      # Adam
-            "friendly_female": "XB0fDUnXU5powFXDhCwa",     # Charlotte
-            "customer_service": "oWAxZDx7w5VEj9dCyTzz",    # Grace
-            "technical_expert": "VR6AewLTigWG4xSOukaG"     # Arnold
+            "professional_male": "JBFqnCBsd6RMkjVDRZzb",    # George
+            "professional_female": "EXAVITQu4vr4xnSDxMaL",  # Sarah
+            "friendly_male": "IKne3meq5aSn9XLyUdCD",        # Charlie
+            "friendly_female": "9BWtsMINqrJLrRacOk9x",      # Aria
+            "customer_service": "EXAVITQu4vr4xnSDxMaL",     # Sarah
+            "technical_expert": "JBFqnCBsd6RMkjVDRZzb"      # George
         }
     
     async def text_to_speech(
