@@ -65,7 +65,7 @@ class VoiceService:
             voice_id = self.voice_profiles.get(voice_profile, self.voice_profiles["professional_female"])
         
         try:
-            # Generate audio
+            # Generate audio using the correct API
             audio = self.elevenlabs_client.generate(
                 text=text,
                 voice=voice_id,
