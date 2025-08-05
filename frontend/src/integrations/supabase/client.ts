@@ -15,8 +15,8 @@ let client;
 
 // Check if we're in demo mode or if Supabase is not configured
 const isSupabaseConfigured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY && 
-                           !SUPABASE_URL.includes('localhost') || 
-                           !ENABLE_DEMO_MODE;
+                           SUPABASE_URL.trim() !== '' && 
+                           SUPABASE_PUBLISHABLE_KEY.trim() !== '';
 
 if (ENABLE_DEMO_MODE || !isSupabaseConfigured) {
   console.log('🎯 Running in DEMO mode - using mock data');
