@@ -3,7 +3,7 @@ AImpact Platform - Universal Agent Platform Backend
 Enterprise Voice Agent Ecosystem that democratizes AI voice agent development
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -24,6 +24,7 @@ from api.rooms import router as rooms_router
 from api.studio import router as studio_router
 from api.access import router as access_router
 from api.analytics import router as analytics_router
+from middleware.auth import require_api_key
 
 app = FastAPI(
     title="AImpact Platform API",
@@ -70,13 +71,13 @@ async def shutdown_db_client():
         client.close()
         logger.info("MongoDB connection closed")
 
-# Include API routers
-app.include_router(agents_router)
-app.include_router(voice_router)
-app.include_router(rooms_router)
-app.include_router(studio_router)
-app.include_router(access_router)
-app.include_router(analytics_router)
+# Include API routers with API key dependency (soft-enforced if keys exist)
+app.include_router(access_router)  # allow bootstrap without key
+app.include_router(analytics_router, dependencies=[Depends(require_api_key)])
+app.include_router(agents_router, dependencies=[Depends(require_api_key)])
+app.include_router(voice_router, dependencies=[Depends(require_api_key)])
+app.include_router(rooms_router, dependencies=[Depends(require_api_key)])
+app.include_router(studio_router, dependencies=[Depends(require_api_key)])
 
 @app.get("/")
 async def root():

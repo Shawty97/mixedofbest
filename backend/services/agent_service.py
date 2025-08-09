@@ -10,6 +10,7 @@ import uuid
 from .ai_service import ai_service
 from .voice_service import voice_service
 from .livekit_service import livekit_service
+from .session_service import session_service
 
 logger = logging.getLogger(__name__)
 
@@ -150,13 +151,20 @@ class AgentService:
             logger.error(f"Failed to deploy agent {agent_id}: {e}")
             return False
     
-    async def process_user_message(self, agent_id: str, message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
-        """Process user message through the agent with resilient audio fallback"""
+    async def process_user_message(self, agent_id: str, message: str, user_id: Optional[str] = None, session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Process user message through the agent with resilient audio fallback and transcript logging"""
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
         agent = self.active_agents[agent_id]
         try:
+            # Ensure a session exists and log the user message
+            sess_id = await session_service.ensure_session(session_id=session_id, agent_id=agent_id, user_id=user_id)
+            await session_service.add_message(sess_id, role="user", content={"text": message})
+
+            # AI response
             ai_response = await ai_service.send_message(session_id=agent.ai_session_id, message=message)
+
+            # TTS generation (may result in None)
             voice_profile = agent.config.get("voice_profile", "professional_female")
             audio_base64: Optional[str] = None
             audio_generated = False
@@ -170,8 +178,18 @@ class AgentService:
                 audio_base64 = None
                 audio_generated = False
                 provider_used = None
+
+            # Log agent message
+            await session_service.add_message(sess_id, role="agent", content={
+                "text_response": ai_response,
+                "audio_generated": audio_generated,
+                "provider_used": provider_used,
+            })
+
+            # Update agent activity
             agent.conversation_count += 1
             agent.last_activity = datetime.utcnow()
+
             return {
                 "text_response": ai_response,
                 "audio_response": audio_base64,
@@ -179,13 +197,14 @@ class AgentService:
                 "provider_used": provider_used,
                 "agent_id": agent_id,
                 "agent_name": agent.name,
+                "session_id": sess_id,
                 "timestamp": datetime.utcnow().isoformat()
             }
         except Exception as e:
             logger.error(f"Failed to process message for agent {agent_id}: {e}")
             raise
     
-    async def process_voice_message(self, agent_id: str, audio_data: bytes, language: str = "en-US") -> Dict[str, Any]:
+    async def process_voice_message(self, agent_id: str, audio_data: bytes, language: str = "en-US", user_id: Optional[str] = None, session_id: Optional[str] = None) -> Dict[str, Any]:
         """Process voice message through the agent"""
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
@@ -193,7 +212,7 @@ class AgentService:
             stt_result = await voice_service.speech_to_text(audio_data=audio_data, language=language)
             if not stt_result.get("success", False):
                 return {"error": "Speech recognition failed", "details": stt_result.get("error", "Unknown error")}
-            response = await self.process_user_message(agent_id=agent_id, message=stt_result["text"])
+            response = await self.process_user_message(agent_id=agent_id, message=stt_result["text"], user_id=user_id, session_id=session_id)
             response["transcription"] = stt_result["text"]
             response["transcription_confidence"] = stt_result.get("confidence", 0.0)
             return response
