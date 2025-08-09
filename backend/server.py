@@ -75,6 +75,8 @@ app.include_router(agents_router)
 app.include_router(voice_router)
 app.include_router(rooms_router)
 app.include_router(studio_router)
+app.include_router(access_router)
+app.include_router(analytics_router)
 
 @app.get("/")
 async def root():
