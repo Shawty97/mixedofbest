@@ -19,6 +19,11 @@ class TokenRequest(BaseModel):
     participant_name: str
     permissions: Optional[Dict[str, bool]] = None
 
+class JoinLinkRequest(BaseModel):
+    room_name: str
+    participant_name: str
+    permissions: Optional[Dict[str, bool]] = None
+
 @router.post("/token")
 async def generate_token(request: TokenRequest):
     """Generate access token for room"""
@@ -28,7 +33,6 @@ async def generate_token(request: TokenRequest):
             participant_name=request.participant_name,
             permissions=request.permissions
         )
-        
         return {
             "success": True,
             "token": token,
@@ -48,12 +52,7 @@ async def create_room(request: CreateRoomRequest):
             room_type=request.room_type,
             max_participants=request.max_participants
         )
-        
-        return {
-            "success": True,
-            "room": room,
-            "message": f"Room '{request.name}' created successfully"
-        }
+        return {"success": True, "room": room, "message": f"Room '{request.name}' created successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -62,11 +61,7 @@ async def list_rooms():
     """List all active rooms"""
     try:
         rooms = await livekit_service.list_rooms()
-        return {
-            "success": True,
-            "rooms": rooms,
-            "count": len(rooms)
-        }
+        return {"success": True, "rooms": rooms, "count": len(rooms)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -75,12 +70,7 @@ async def get_room_details(room_name: str):
     """Get room details and participants"""
     try:
         participants = await livekit_service.list_participants(room_name)
-        return {
-            "success": True,
-            "room_name": room_name,
-            "participants": participants,
-            "participant_count": len(participants)
-        }
+        return {"success": True, "room_name": room_name, "participants": participants, "participant_count": len(participants)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -90,10 +80,7 @@ async def delete_room(room_name: str):
     try:
         success = await livekit_service.delete_room(room_name)
         if success:
-            return {
-                "success": True,
-                "message": f"Room '{room_name}' deleted successfully"
-            }
+            return {"success": True, "message": f"Room '{room_name}' deleted successfully"}
         else:
             raise HTTPException(status_code=404, detail="Room not found")
     except Exception as e:
@@ -104,12 +91,7 @@ async def list_participants(room_name: str):
     """List participants in a room"""
     try:
         participants = await livekit_service.list_participants(room_name)
-        return {
-            "success": True,
-            "room_name": room_name,
-            "participants": participants,
-            "count": len(participants)
-        }
+        return {"success": True, "room_name": room_name, "participants": participants, "count": len(participants)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -119,10 +101,7 @@ async def remove_participant(room_name: str, participant_identity: str):
     try:
         success = await livekit_service.remove_participant(room_name, participant_identity)
         if success:
-            return {
-                "success": True,
-                "message": f"Participant '{participant_identity}' removed from room '{room_name}'"
-            }
+            return {"success": True, "message": f"Participant '{participant_identity}' removed from room '{room_name}'"}
         else:
             raise HTTPException(status_code=404, detail="Participant not found")
     except Exception as e:
@@ -132,8 +111,27 @@ async def remove_participant(room_name: str, participant_identity: str):
 async def get_room_configs():
     """Get available room configurations"""
     configs = livekit_service.get_room_configs()
-    return {
-        "success": True,
-        "configs": configs,
-        "message": "Room configurations retrieved successfully"
-    }
+    return {"success": True, "configs": configs, "message": "Room configurations retrieved successfully"}
+
+@router.post("/join-link")
+async def join_link(request: JoinLinkRequest):
+    """Generate a short join link payload for clients (token + recommended query string).
+    We avoid hardcoding domains/ports; return relative path suggestion.
+    """
+    try:
+        token = await livekit_service.generate_token(
+            room_name=request.room_name,
+            participant_name=request.participant_name,
+            permissions=request.permissions
+        )
+        join_url = f"/join?room={request.room_name}&token={token}"
+        return {
+            "success": True,
+            "room_name": request.room_name,
+            "participant_name": request.participant_name,
+            "livekit_url": livekit_service.livekit_url,
+            "token": token,
+            "join_url": join_url,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
