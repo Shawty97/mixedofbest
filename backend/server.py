@@ -22,6 +22,8 @@ from api.agents import router as agents_router
 from api.voice import router as voice_router
 from api.rooms import router as rooms_router
 from api.studio import router as studio_router
+from api.access import router as access_router
+from api.analytics import router as analytics_router
 
 app = FastAPI(
     title="AImpact Platform API",
