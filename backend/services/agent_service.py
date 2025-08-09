@@ -10,6 +10,7 @@ import uuid
 from .ai_service import ai_service
 from .voice_service import voice_service
 from .livekit_service import livekit_service
+from .agent_repository import agent_repository
 from .session_service import session_service
 
 logger = logging.getLogger(__name__)
