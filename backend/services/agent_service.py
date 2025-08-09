@@ -182,7 +182,7 @@ class AgentService:
         message: str,
         user_id: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Process user message through the agent"""
+        """Process user message through the agent with resilient audio fallback"""
         
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
@@ -196,12 +196,20 @@ class AgentService:
                 message=message
             )
             
-            # Generate voice response
+            # Try to generate voice response (ElevenLabs -&gt; Azure -&gt; None)
             voice_profile = agent.config.get("voice_profile", "professional_female")
-            audio_base64 = await voice_service.text_to_speech(
-                text=ai_response,
-                voice_profile=voice_profile
-            )
+            audio_base64: Optional[str] = None
+            audio_generated = False
+            try:
+                audio_base64 = await voice_service.text_to_speech(
+                    text=ai_response,
+                    voice_profile=voice_profile
+                )
+                audio_generated = audio_base64 is not None
+            except Exception as tts_err:
+                logger.warning(f"TTS failed for agent {agent_id}, continuing with text-only: {tts_err}")
+                audio_base64 = None
+                audio_generated = False
             
             # Update agent activity
             agent.conversation_count += 1
@@ -210,6 +218,7 @@ class AgentService:
             return {
                 "text_response": ai_response,
                 "audio_response": audio_base64,
+                "audio_generated": audio_generated,
                 "agent_id": agent_id,
                 "agent_name": agent.name,
                 "timestamp": datetime.utcnow().isoformat()

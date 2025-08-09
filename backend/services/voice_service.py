@@ -35,9 +35,17 @@ class VoiceService:
                 subscription=self.azure_speech_key,
                 region=self.azure_region
             )
+            # Prefer MP3 output that works well in browsers
+            try:
+                self.speech_config.set_speech_synthesis_output_format(
+                    speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+                )
+            except Exception:
+                # Fallback silently if the SDK version differs
+                pass
         else:
             self.speech_config = None
-            logger.warning("Azure Speech key not found. STT will be limited.")
+            logger.warning("Azure Speech key not found. STT/TTS will be limited.")
         
         # Voice configurations - Updated with current ElevenLabs voice IDs
         self.voice_profiles = {
@@ -48,40 +56,90 @@ class VoiceService:
             "customer_service": "EXAVITQu4vr4xnSDxMaL",     # Sarah
             "technical_expert": "JBFqnCBsd6RMkjVDRZzb"      # George
         }
+        
+        # Azure neural voice mapping aligned with our profiles
+        self.azure_voices = {
+            "professional_female": "en-US-JennyNeural",
+            "professional_male": "en-US-GuyNeural",
+            "friendly_female": "en-US-AriaNeural",
+            "friendly_male": "en-US-DavisNeural",
+            "customer_service": "en-US-JennyNeural",
+            "technical_expert": "en-US-GuyNeural",
+        }
     
     async def text_to_speech(
         self, 
         text: str,
         voice_id: Optional[str] = None,
         voice_profile: str = "professional_female"
-    ) -> str:
-        """Convert text to speech and return base64 encoded audio"""
+    ) -> Optional[str]:
+        """Convert text to speech and return base64 encoded audio.
+        Smart fallback chain: ElevenLabs -&gt; Azure Neural TTS -&gt; None (text-only).
+        Returns base64 MP3 string, or None if audio generation is unavailable.
+        """
         
-        if not self.elevenlabs_client:
-            raise ValueError("ElevenLabs client not initialized")
+        # Try ElevenLabs first if configured
+        if self.elevenlabs_client:
+            # Get voice ID from profile or use provided
+            if not voice_id:
+                voice_id = self.voice_profiles.get(voice_profile, self.voice_profiles["professional_female"])
+            try:
+                audio = self.elevenlabs_client.text_to_speech.convert(
+                    text=text,
+                    voice_id=voice_id,
+                    model_id="eleven_monolingual_v1"
+                )
+                audio_bytes = b"".join(audio)
+                audio_base64 = base64.b64encode(audio_bytes).decode()
+                logger.info(f"Generated TTS via ElevenLabs for text length: {len(text)}")
+                return audio_base64
+            except Exception as e:
+                logger.warning(f"ElevenLabs TTS failed, attempting Azure fallback: {e}")
+        else:
+            logger.info("ElevenLabs client unavailable; attempting Azure TTS fallback")
         
-        # Get voice ID from profile or use provided
-        if not voice_id:
-            voice_id = self.voice_profiles.get(voice_profile, self.voice_profiles["professional_female"])
+        # Azure Neural TTS fallback
+        if self.speech_config:
+            try:
+                # Map to azure voice
+                azure_voice = self.azure_voices.get(voice_profile, "en-US-JennyNeural")
+                self.speech_config.speech_synthesis_voice_name = azure_voice
+                audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=False)
+                synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config, audio_config=audio_config)
+                result = await asyncio.get_event_loop().run_in_executor(None, lambda: synthesizer.speak_text_async(text).get())
+                if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+                    # Some SDK builds expose audio_data property
+                    audio_bytes = getattr(result, "audio_data", None)
+                    if not audio_bytes:
+                        try:
+                            stream = speechsdk.AudioDataStream(result)
+                            # Read stream to bytes
+                            chunks = []
+                            buff = bytearray(4096)
+                            while True:
+                                read = stream.read_data(buff)
+                                if read == 0:
+                                    break
+                                chunks.append(bytes(buff[:read]))
+                            audio_bytes = b"".join(chunks)
+                        except Exception:
+                            audio_bytes = b""
+                    if audio_bytes:
+                        audio_base64 = base64.b64encode(audio_bytes).decode()
+                        logger.info("Generated TTS via Azure Neural TTS")
+                        return audio_base64
+                    else:
+                        logger.error("Azure TTS succeeded but produced empty audio bytes")
+                else:
+                    logger.error(f"Azure TTS failed with reason: {result.reason}")
+            except Exception as e:
+                logger.error(f"Azure Neural TTS generation error: {e}")
+        else:
+            logger.info("Azure Speech config unavailable; skipping Azure TTS fallback")
         
-        try:
-            # Generate audio using the correct API
-            audio = self.elevenlabs_client.text_to_speech.convert(
-                text=text,
-                voice_id=voice_id,
-                model_id="eleven_monolingual_v1"
-            )
-            
-            # Convert to base64 for frontend
-            audio_bytes = b"".join(audio)
-            audio_base64 = base64.b64encode(audio_bytes).decode()
-            
-            logger.info(f"Generated TTS audio for text length: {len(text)}")
-            return audio_base64
-            
-        except Exception as e:
-            logger.error(f"TTS generation failed: {e}")
-            raise
+        # Final fallback: return None to enable text-only mode upstream
+        logger.warning("All TTS providers unavailable; returning None for text-only fallback")
+        return None
     
     async def speech_to_text(
         self, 
