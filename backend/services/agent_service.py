@@ -103,215 +103,131 @@ class AgentService:
         if agent_type not in self.agent_templates:
             raise ValueError(f"Unknown agent type: {agent_type}")
         
-        # Generate agent ID
         agent_id = f"agent_{agent_type}_{uuid.uuid4().hex[:8]}"
-        
-        # Get template and merge with custom config
         template = self.agent_templates[agent_type].copy()
         if custom_config:
             template.update(custom_config)
-        
-        # Set agent name
         if not name:
             name = f"{template['name']} {agent_id[-8:]}"
-        
         try:
-            # Create AI chat session
             ai_session_id = await ai_service.create_agent_chat(
                 agent_id=agent_id,
                 agent_type=agent_type,
                 model=template.get("llm_model", "gpt-4o")
             )
-            
-            # Create agent instance
             agent = VoiceAgent(
                 agent_id=agent_id,
                 agent_type=agent_type,
                 name=name,
                 config=template
             )
-            
             agent.ai_session_id = ai_session_id
             agent.status = "ready"
-            
-            # Store agent
             self.active_agents[agent_id] = agent
-            
             logger.info(f"Created voice agent: {agent_id} ({agent_type})")
             return agent_id
-            
         except Exception as e:
             logger.error(f"Failed to create agent: {e}")
             raise
     
-    async def deploy_agent_to_room(
-        self, 
-        agent_id: str, 
-        room_name: str
-    ) -> bool:
+    async def deploy_agent_to_room(self, agent_id: str, room_name: str) -> bool:
         """Deploy an agent to a LiveKit room"""
-        
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
-        
         agent = self.active_agents[agent_id]
-        
         try:
-            # Generate LiveKit token for the agent
-            token = await livekit_service.generate_token(
+            _ = await livekit_service.generate_token(
                 room_name=room_name,
                 participant_name=f"agent_{agent.name}",
                 permissions={"can_publish": True, "can_subscribe": True}
             )
-            
-            # Update agent status
             agent.current_room = room_name
             agent.status = "deployed"
             agent.last_activity = datetime.utcnow()
-            
             logger.info(f"Deployed agent {agent_id} to room {room_name}")
             return True
-            
         except Exception as e:
             logger.error(f"Failed to deploy agent {agent_id}: {e}")
             return False
     
-    async def process_user_message(
-        self, 
-        agent_id: str,
-        message: str,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    async def process_user_message(self, agent_id: str, message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Process user message through the agent with resilient audio fallback"""
-        
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
-        
         agent = self.active_agents[agent_id]
-        
         try:
-            # Get AI response
-            ai_response = await ai_service.send_message(
-                session_id=agent.ai_session_id,
-                message=message
-            )
-            
-            # Try to generate voice response (ElevenLabs -&gt; Azure -&gt; None)
+            ai_response = await ai_service.send_message(session_id=agent.ai_session_id, message=message)
             voice_profile = agent.config.get("voice_profile", "professional_female")
             audio_base64: Optional[str] = None
             audio_generated = False
+            provider_used: Optional[str] = None
             try:
-                audio_base64 = await voice_service.text_to_speech(
-                    text=ai_response,
-                    voice_profile=voice_profile
-                )
+                audio_base64 = await voice_service.text_to_speech(text=ai_response, voice_profile=voice_profile)
                 audio_generated = audio_base64 is not None
+                provider_used = voice_service.last_provider if audio_generated else None
             except Exception as tts_err:
                 logger.warning(f"TTS failed for agent {agent_id}, continuing with text-only: {tts_err}")
                 audio_base64 = None
                 audio_generated = False
-            
-            # Update agent activity
+                provider_used = None
             agent.conversation_count += 1
             agent.last_activity = datetime.utcnow()
-            
             return {
                 "text_response": ai_response,
                 "audio_response": audio_base64,
                 "audio_generated": audio_generated,
+                "provider_used": provider_used,
                 "agent_id": agent_id,
                 "agent_name": agent.name,
                 "timestamp": datetime.utcnow().isoformat()
             }
-            
         except Exception as e:
             logger.error(f"Failed to process message for agent {agent_id}: {e}")
             raise
     
-    async def process_voice_message(
-        self, 
-        agent_id: str,
-        audio_data: bytes,
-        language: str = "en-US"
-    ) -> Dict[str, Any]:
+    async def process_voice_message(self, agent_id: str, audio_data: bytes, language: str = "en-US") -> Dict[str, Any]:
         """Process voice message through the agent"""
-        
         if agent_id not in self.active_agents:
             raise ValueError(f"Agent {agent_id} not found")
-        
         try:
-            # Convert speech to text
-            stt_result = await voice_service.speech_to_text(
-                audio_data=audio_data,
-                language=language
-            )
-            
+            stt_result = await voice_service.speech_to_text(audio_data=audio_data, language=language)
             if not stt_result.get("success", False):
-                return {
-                    "error": "Speech recognition failed",
-                    "details": stt_result.get("error", "Unknown error")
-                }
-            
-            # Process the transcribed text
-            response = await self.process_user_message(
-                agent_id=agent_id,
-                message=stt_result["text"]
-            )
-            
-            # Add STT information
+                return {"error": "Speech recognition failed", "details": stt_result.get("error", "Unknown error")}
+            response = await self.process_user_message(agent_id=agent_id, message=stt_result["text"])
             response["transcription"] = stt_result["text"]
             response["transcription_confidence"] = stt_result.get("confidence", 0.0)
-            
             return response
-            
         except Exception as e:
             logger.error(f"Failed to process voice message for agent {agent_id}: {e}")
             raise
     
     async def remove_agent(self, agent_id: str) -> bool:
-        """Remove an agent and clean up resources"""
-        
         if agent_id not in self.active_agents:
             return False
-        
         agent = self.active_agents[agent_id]
-        
         try:
-            # End AI session
             if agent.ai_session_id:
                 await ai_service.end_session(agent.ai_session_id)
-            
-            # Remove from active agents
             del self.active_agents[agent_id]
-            
             logger.info(f"Removed agent: {agent_id}")
             return True
-            
         except Exception as e:
             logger.error(f"Failed to remove agent {agent_id}: {e}")
             return False
     
     def get_agent(self, agent_id: str) -> Optional[Dict[str, Any]]:
-        """Get agent information"""
         if agent_id in self.active_agents:
             return self.active_agents[agent_id].to_dict()
         return None
     
     def get_all_agents(self) -> List[Dict[str, Any]]:
-        """Get all active agents"""
         return [agent.to_dict() for agent in self.active_agents.values()]
     
     def get_agent_templates(self) -> Dict[str, Any]:
-        """Get available agent templates"""
         return self.agent_templates.copy()
     
     def get_agents_by_room(self, room_name: str) -> List[Dict[str, Any]]:
-        """Get agents deployed to a specific room"""
-        return [
-            agent.to_dict() 
-            for agent in self.active_agents.values() 
-            if agent.current_room == room_name
-        ]
+        return [agent.to_dict() for agent in self.active_agents.values() if agent.current_room == room_name]
 
 # Global agent service instance
 agent_service = AgentService()
