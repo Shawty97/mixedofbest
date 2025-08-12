@@ -1,0 +1,51 @@
+{
+  "name": "mixedofbest-platform",
+  "version": "1.0.0",
+  "description": "Universal AI Agent Platform - The Agent Operating System",
+  "workspaces": [
+    "frontend",
+    "frontend/frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python server.py",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && python -m pytest",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "setup": "npm run install:all && npm run validate:setup",
+    "validate:setup": "cd frontend && npm run validate:setup",
+    "docker:up": "cd frontend && docker-compose up -d",
+    "docker:down": "cd frontend && docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "voice",
+    "tts",
+    "stt",
+    "quantum",
+    "enterprise",
+    "platform"
+  ],
+  "author": "AImpact Platform Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aimpact-platform/mixedofbest.git"
+  }
+}

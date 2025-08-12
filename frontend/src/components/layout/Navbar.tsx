@@ -9,7 +9,9 @@ import {
   Atom, 
   LayoutDashboard,
   LogOut,
-  User
+  User,
+  CreditCard,
+  Heart
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,6 +33,8 @@ export function Navbar() {
     { name: 'Deploy', href: '/deploy', icon: Rocket },
     { name: 'Monitor', href: '/monitor', icon: Activity },
     { name: 'Quantum Lab', href: '/quantum', icon: Atom },
+    { name: 'Healthcare', href: '/healthcare', icon: Heart },
+    { name: 'Billing', href: '/billing', icon: CreditCard },
   ];
 
   if (location.pathname === '/auth' || location.pathname === '/landing') {

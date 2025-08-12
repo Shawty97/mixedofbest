@@ -9,7 +9,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo 'No tests configured yet. This will be extended in Sprint 1.'",
+    "validate:setup": "node validate-setup.js"
   },
   "dependencies": {
     "@11labs/react": "^0.1.4",

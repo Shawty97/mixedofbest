@@ -11,6 +11,8 @@ import { UniversalAgentDefinition, UniversalAgentManager } from '@/schemas/unive
 import { UniversalAgentService } from '@/services/universalAgentService';
 import { useToast } from '@/hooks/use-toast';
 import { Cpu, Brain, Zap, Shield, Cloud, Download, Upload, Copy } from 'lucide-react';
+import { getUamValidator, validateUamAgent } from '@/services/uamSchema';
+import { UamMapper } from '@/services/uamMapper';
 
 interface UniversalAgentBuilderProps {
   agentId?: string;
@@ -24,11 +26,25 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
+  // UAM state
+  const [uamVersion, setUamVersion] = useState<string>("");
+  const [uamValid, setUamValid] = useState<boolean>(true);
+  const [uamErrors, setUamErrors] = useState<string[]>([]);
 
   useEffect(() => {
     if (agentId) {
       loadAgent(agentId);
     }
+    // Initialize UAM validator version
+    (async () => {
+      try {
+        const { version } = await getUamValidator();
+        setUamVersion(version || "");
+      } catch (e) {
+        // Surface but don’t block builder
+        console.warn('Failed to initialize UAM validator', e);
+      }
+    })();
   }, [agentId]);
 
   const loadAgent = async (id: string) => {
@@ -37,6 +53,8 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
       const agent = await UniversalAgentService.getById(id);
       if (agent) {
         setDefinition(agent.definition);
+        // Validate UAM once loaded
+        await validateUamFromDefinition(agent.definition);
       }
     } catch (error) {
       toast({
@@ -49,10 +67,29 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
     }
   };
 
+  const validateUamFromDefinition = async (def: UniversalAgentDefinition) => {
+    try {
+      const uamDoc = UamMapper.toUam(def);
+      const res = await validateUamAgent(uamDoc);
+      setUamValid(!!res.valid);
+      if (!res.valid && res.errors) {
+        const formatted = res.errors.map((e: any) => `${e.instancePath || e.schemaPath}: ${e.message}`);
+        setUamErrors(formatted);
+      } else {
+        setUamErrors([]);
+      }
+    } catch (e) {
+      setUamValid(false);
+      setUamErrors([`UAM validation failed: ${e}`]);
+    }
+  };
+
   const validateAndUpdate = (newDefinition: UniversalAgentDefinition) => {
     const validation = UniversalAgentManager.validateDefinition(newDefinition);
     setValidationErrors(validation.errors || []);
     setDefinition(newDefinition);
+    // Trigger UAM validation asynchronously
+    validateUamFromDefinition(newDefinition);
   };
 
   const handleSave = async () => {
@@ -100,6 +137,33 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
     }
   };
 
+  const handleExportUAM = async () => {
+    try {
+      const uamDoc = UamMapper.toUam(definition);
+      const json = JSON.stringify(uamDoc, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${definition.name.toLowerCase().replace(/\s+/g, '-')}.uam.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Success", description: "UAM JSON exported!" });
+    } catch (error) {
+      toast({ title: "Error", description: `Failed to export UAM: ${error}`, variant: 'destructive' });
+    }
+  };
+
+  const handleCopyUAM = async () => {
+    try {
+      const uamDoc = UamMapper.toUam(definition);
+      await navigator.clipboard.writeText(JSON.stringify(uamDoc, null, 2));
+      toast({ title: 'Copied', description: 'UAM JSON copied to clipboard' });
+    } catch (error) {
+      toast({ title: 'Error', description: `Copy failed: ${error}`, variant: 'destructive' });
+    }
+  };
+
   const handleImportYAML = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -117,6 +181,30 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
           description: `Failed to import: ${error}`,
           variant: "destructive"
         });
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImportUAM = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const jsonContent = e.target?.result as string;
+        const uamDoc = JSON.parse(jsonContent);
+        // Validate UAM doc before converting
+        const res = await validateUamAgent(uamDoc);
+        if (!res.valid) {
+          const formatted = (res.errors || []).map((er: any) => `${er.instancePath || er.schemaPath}: ${er.message}`);
+          throw new Error(`Invalid UAM document:\n${formatted.join('\n')}`);
+        }
+        const mapped = UamMapper.fromUam(uamDoc);
+        validateAndUpdate(mapped);
+        toast({ title: 'Success', description: 'UAM JSON imported!' });
+      } catch (error) {
+        toast({ title: 'Error', description: `Failed to import UAM: ${error}`, variant: 'destructive' });
       }
     };
     reader.readAsText(file);
@@ -171,11 +259,56 @@ export function UniversalAgentBuilder({ agentId, onSave }: UniversalAgentBuilder
                 className="hidden"
               />
             </label>
+            <Button variant="outline" onClick={handleExportUAM}>
+              <Download className="h-4 w-4 mr-2" />
+              Export UAM JSON
+            </Button>
+            <label>
+              <Button variant="outline" asChild>
+                <span>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import UAM JSON
+                </span>
+              </Button>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportUAM}
+                className="hidden"
+              />
+            </label>
+            <Button variant="outline" onClick={handleCopyUAM}>
+              <Copy className="h-4 w-4 mr-2" />
+              Copy UAM JSON
+            </Button>
             <Button onClick={handleSave} disabled={loading || validationErrors.length > 0}>
               {loading ? "Saving..." : "Save Agent"}
             </Button>
           </div>
         </CardHeader>
+        {/* UAM Validation Status */}
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Badge variant={uamValid ? 'default' : 'destructive'}>
+                UAM {uamVersion || ''} {uamValid ? 'Valid' : 'Invalid'}
+              </Badge>
+              {!uamValid && (
+                <span className="text-sm text-destructive">{uamErrors.length} issue(s) found</span>
+              )}
+            </div>
+          </div>
+          {!uamValid && uamErrors.length > 0 && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mt-3">
+              <h4 className="font-semibold text-destructive mb-2">UAM Validation Errors:</h4>
+              <ul className="list-disc list-inside text-sm text-destructive space-y-1">
+                {uamErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
         {validationErrors.length > 0 && (
           <CardContent>
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">

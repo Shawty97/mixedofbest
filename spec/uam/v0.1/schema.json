@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aimpact.platform/spec/uam/v0.1/schema.json",
+  "title": "Universal Agent Metamodel v0.1",
+  "description": "Schema for defining portable AI agents across platforms",
+  "type": "object",
+  "required": ["schemaVersion", "meta", "persona", "capabilities"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^0\\.1\\.[0-9]+$",
+      "description": "UAM schema version (semantic versioning)"
+    },
+    "meta": {
+      "type": "object",
+      "required": ["name", "version", "author"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "persona": {
+      "type": "object",
+      "required": ["identity", "language"],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 1000,
+          "description": "Core identity and role description"
+        },
+        "tonality": {
+          "type": "string",
+          "enum": ["professional", "friendly", "formal", "casual", "empathetic"]
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+          "description": "Primary language (ISO 639-1 with optional country)"
+        },
+        "fallbackLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["llm"],
+      "properties": {
+        "llm": {
+          "type": "object",
+          "required": ["provider", "model"],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "azure", "anthropic", "google"]
+            },
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "maxTokens": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          }
+        },
+        "tts": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["azure", "elevenlabs", "openai", "coqui"]
+              }
+            },
+            "voice": {
+              "type": "string"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 2.0
+            }
+          }
+        },
+        "stt": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["azure", "openai", "deepgram"]
+              }
+            },
+            "language": {
+              "type": "string",
+              "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "shortTermLimit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "longTermEnabled": {
+              "type": "boolean"
+            },
+            "personalDataRetention": {
+              "type": "string",
+              "enum": ["session", "30d", "1y", "indefinite"]
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["api", "function", "integration"]
+          },
+          "endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "authentication": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["none", "apikey", "oauth", "basic"]
+              }
+            }
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "knowledge": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["document", "database", "api", "realtime"]
+              },
+              "uri": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "ragProfile": {
+          "type": "object",
+          "properties": {
+            "chunkSize": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 2000
+            },
+            "retrievalLimit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "similarityThreshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["web", "slack", "whatsapp", "teams", "twilio", "widget"]
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["us", "eu", "asia", "global"]
+          }
+        },
+        "scaling": {
+          "type": "object",
+          "properties": {
+            "maxConcurrent": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "autoScale": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "piiHandling": {
+          "type": "string",
+          "enum": ["none", "minimal", "standard", "strict"]
+        },
+        "dataResidency": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["us", "eu", "asia"]
+          }
+        },
+        "retentionPolicy": {
+          "type": "string",
+          "enum": ["session", "30d", "1y", "indefinite"]
+        },
+        "auditLevel": {
+          "type": "string",
+          "enum": ["basic", "detailed", "forensic"]
+        }
+      }
+    },
+    "economics": {
+      "type": "object",
+      "properties": {
+        "budgetLimits": {
+          "type": "object",
+          "properties": {
+            "daily": {
+              "type": "number",
+              "minimum": 0
+            },
+            "monthly": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "costPerTask": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maximum": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "throttling": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "requestsPerMinute": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,9 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_QDRANT_URL?: string
   readonly VITE_QDRANT_API_KEY?: string
   readonly VITE_ENABLE_DEMO_MODE?: string
-  readonly MODE: string
-  readonly DEV: boolean
-  readonly PROD: boolean
+  readonly VITE_API_URL?: string
 }
 
 interface ImportMeta {

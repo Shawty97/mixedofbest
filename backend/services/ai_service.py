@@ -6,8 +6,12 @@ import os
 import asyncio
 import logging
 from typing import Dict, List, Optional, Any
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 import uuid
+
+try:
+    import openai
+except ImportError:
+    openai = None
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +20,15 @@ class AIService:
     
     def __init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.active_chats: Dict[str, LlmChat] = {}
+        self.active_chats: Dict[str, dict] = {}
+        self.client = None
         
         if not self.openai_api_key:
             logger.warning("OpenAI API key not found. AI features will be limited.")
+        elif openai:
+            self.client = openai.OpenAI(api_key=self.openai_api_key)
+        else:
+            logger.warning("OpenAI package not installed. AI features will be limited.")
     
     async def create_agent_chat(
         self, 
@@ -36,13 +45,13 @@ class AIService:
         session_id = f"{agent_id}_{uuid.uuid4().hex[:8]}"
         
         try:
-            chat = LlmChat(
-                api_key=self.openai_api_key,
-                session_id=session_id,
-                system_message=system_message
-            ).with_model("openai", model).with_max_tokens(4096)
+            chat_data = {
+                "model": model,
+                "system_message": system_message,
+                "messages": [{"role": "system", "content": system_message}]
+            }
             
-            self.active_chats[session_id] = chat
+            self.active_chats[session_id] = chat_data
             logger.info(f"Created AI chat session: {session_id}")
             return session_id
             
@@ -61,20 +70,32 @@ class AIService:
         if session_id not in self.active_chats:
             raise ValueError(f"Chat session {session_id} not found")
         
-        chat = self.active_chats[session_id]
+        if not self.client:
+            return "AI service not available. Please configure OpenAI API key."
+        
+        chat_data = self.active_chats[session_id]
         
         try:
-            # Create user message with context if provided
-            user_message = UserMessage(text=message)
+            # Add user message to conversation
+            chat_data["messages"].append({"role": "user", "content": message})
             
             # Send message and get response
-            response = await chat.send_message(user_message)
+            response = await asyncio.to_thread(
+                self.client.chat.completions.create,
+                model=chat_data["model"],
+                messages=chat_data["messages"],
+                max_tokens=4096
+            )
+            
+            ai_response = response.choices[0].message.content
+            chat_data["messages"].append({"role": "assistant", "content": ai_response})
+            
             logger.info(f"AI response received for session {session_id}")
-            return response
+            return ai_response
             
         except Exception as e:
             logger.error(f"Failed to get AI response: {e}")
-            raise
+            return f"Error: {str(e)}"
     
     async def end_session(self, session_id: str) -> None:
         """End an AI chat session and clean up resources"""

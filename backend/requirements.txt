@@ -23,9 +23,10 @@ numpy>=1.26.0
 python-multipart>=0.0.9
 jq>=1.6.0
 typer>=0.9.0
+stripe>=7.0.0
 
 # AI and Voice Services
-emergentintegrations>=0.1.0
+# emergentintegrations>=0.1.0  # Not available
 litellm>=1.52.0
 azure-cognitiveservices-speech>=1.30.0
 elevenlabs>=0.2.26
@@ -36,3 +37,4 @@ websockets>=11.0
 # Additional utilities
 aiofiles>=23.1.0
 aiohttp>=3.8.0
+jsonschema>=4.17.0

@@ -24,7 +24,9 @@ from api.rooms import router as rooms_router
 from api.studio import router as studio_router
 from api.access import router as access_router
 from api.analytics import router as analytics_router
+from api.payments import router as payments_router
 from middleware.auth import require_api_key
+from api.uam import router as uam_router
 
 app = FastAPI(
     title="AImpact Platform API",
@@ -78,6 +80,8 @@ app.include_router(agents_router, dependencies=[Depends(require_api_key)])
 app.include_router(voice_router, dependencies=[Depends(require_api_key)])
 app.include_router(rooms_router, dependencies=[Depends(require_api_key)])
 app.include_router(studio_router, dependencies=[Depends(require_api_key)])
+app.include_router(payments_router, prefix="/api/payments", tags=["payments"])
+app.include_router(uam_router)  # read-only, safe
 
 @app.get("/")
 async def root():

@@ -21,6 +21,8 @@ import KnowledgeBuilder from "./pages/KnowledgeBuilder";
 import VoiceAgents from "./pages/VoiceAgents";
 import AICopilot from "./pages/AICopilot";
 import Workflows from "./pages/Workflows";
+import Billing from "./pages/Billing";
+import Healthcare from "./pages/Healthcare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,6 +88,16 @@ const App = () => (
                 <Route path="/workflows" element={
                   <ProtectedRoute>
                     <Workflows />
+                  </ProtectedRoute>
+                } />
+                <Route path="/billing" element={
+                  <ProtectedRoute>
+                    <Billing />
+                  </ProtectedRoute>
+                } />
+                <Route path="/healthcare" element={
+                  <ProtectedRoute>
+                    <Healthcare />
                   </ProtectedRoute>
                 } />
                 <Route path="*" element={<NotFound />} />

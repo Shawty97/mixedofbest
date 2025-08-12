@@ -13,7 +13,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 3000,
     host: '0.0.0.0', // Explicitly bind to all interfaces
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: process.env.VITE_API_URL ? {
+      '/api': {
+        target: process.env.VITE_API_URL,
+        changeOrigin: true,
+        secure: false
+      }
+    } : undefined
   },
   plugins: [
     react(),
