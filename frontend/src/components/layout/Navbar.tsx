@@ -11,7 +11,8 @@ import {
   LogOut,
   User,
   CreditCard,
-  Heart
+  Heart,
+  FileText
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -29,6 +30,7 @@ export function Navbar() {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Studio', href: '/studio', icon: Bot },
+    { name: 'Templates', href: '/templates', icon: FileText },
     { name: 'Marketplace', href: '/marketplace', icon: Store },
     { name: 'Deploy', href: '/deploy', icon: Rocket },
     { name: 'Monitor', href: '/monitor', icon: Activity },

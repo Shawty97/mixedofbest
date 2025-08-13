@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -7,7 +8,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PenTool, Store, Server, Rocket, BarChart3 } from "lucide-react";
+import { 
+  PenTool, 
+  Store, 
+  Server, 
+  Rocket, 
+  BarChart3, 
+  Briefcase,
+  Heart,
+  CreditCard,
+  Home,
+  MessageSquare,
+  Settings
+} from "lucide-react";
 
 const Navbar: React.FC = () => {
   return (
@@ -18,10 +31,36 @@ const Navbar: React.FC = () => {
           <span className="text-xl font-bold">AImpact</span>
         </div>
         <nav className="ml-auto flex gap-1 md:gap-2">
-          <Button variant="ghost" className="text-sm md:text-base">Dashboard</Button>
-          <Button variant="ghost" className="text-sm md:text-base">Agents</Button>
-          <Button variant="ghost" className="text-sm md:text-base">Marketplace</Button>
-          <Button variant="ghost" className="text-sm md:text-base">Settings</Button>
+          <Link to="/dashboard">
+            <Button variant="ghost" className="text-sm md:text-base flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              Dashboard
+            </Button>
+          </Link>
+          <Link to="/chat">
+            <Button variant="ghost" className="text-sm md:text-base flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Button>
+          </Link>
+          <Link to="/templates">
+            <Button variant="ghost" className="text-sm md:text-base flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Templates
+            </Button>
+          </Link>
+          <Link to="/healthcare">
+            <Button variant="ghost" className="text-sm md:text-base flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              Healthcare
+            </Button>
+          </Link>
+          <Link to="/billing">
+            <Button variant="ghost" className="text-sm md:text-base flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Billing
+            </Button>
+          </Link>
         </nav>
         <div className="ml-4 flex items-center gap-2">
           <DropdownMenu>
@@ -33,7 +72,9 @@ const Navbar: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <Link to="/settings">
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>API Keys</DropdownMenuItem>
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
@@ -52,4 +93,5 @@ const systemNavItems = [
   { name: 'Engine', href: '/engine', icon: Server },
   { name: 'Deploy', href: '/deploy', icon: Rocket },
   { name: 'Observability', href: '/observability', icon: BarChart3 },
+  { name: 'Templates', href: '/templates', icon: Briefcase },
 ];

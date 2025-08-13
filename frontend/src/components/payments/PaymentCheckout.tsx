@@ -203,7 +203,7 @@ function CheckoutForm({ planId, planName, planPrice, onSuccess, onError }: Check
   );
 }
 
-interface StripeCheckoutProps {
+interface PaymentCheckoutProps {
   planId: string;
   planName: string;
   planPrice: number;
@@ -211,7 +211,7 @@ interface StripeCheckoutProps {
   onError?: (error: string) => void;
 }
 
-function StripeCheckout(props: StripeCheckoutProps) {
+function PaymentCheckout(props: PaymentCheckoutProps) {
   return (
     <Elements stripe={stripePromise}>
       <CheckoutForm {...props} />
@@ -219,4 +219,4 @@ function StripeCheckout(props: StripeCheckoutProps) {
   );
 }
 
-export default StripeCheckout;
+export default PaymentCheckout;

@@ -23,6 +23,7 @@ import AICopilot from "./pages/AICopilot";
 import Workflows from "./pages/Workflows";
 import Billing from "./pages/Billing";
 import Healthcare from "./pages/Healthcare";
+import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,10 +97,15 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/healthcare" element={
-                  <ProtectedRoute>
-                    <Healthcare />
-                  </ProtectedRoute>
-                } />
+              <ProtectedRoute>
+                <Healthcare />
+              </ProtectedRoute>
+            } />
+            <Route path="/templates" element={
+              <ProtectedRoute>
+                <Templates />
+              </ProtectedRoute>
+            } />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

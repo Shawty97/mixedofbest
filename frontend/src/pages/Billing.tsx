@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, Settings, TrendingUp, Users } from 'lucide-react';
 import PricingPlans from '@/components/payments/PricingPlans';
 import BillingDashboard from '@/components/payments/BillingDashboard';
-import StripeCheckout from '@/components/payments/StripeCheckout';
+import PaymentCheckout from '@/components/payments/PaymentCheckout';
 import { toast } from 'sonner';
 
 interface BillingProps {
@@ -82,7 +82,7 @@ const Billing: React.FC<BillingProps> = () => {
             </p>
           </div>
           
-          <StripeCheckout
+          <PaymentCheckout
             planId={selectedPlan.id}
             planName={selectedPlan.name}
             planPrice={selectedPlan.price}
