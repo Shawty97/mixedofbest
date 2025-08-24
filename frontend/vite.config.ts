@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   // Server configuration
   server: {
     port: 3000,
-    host: '0.0.0.0', // Explicitly bind to all interfaces
+    host: 'localhost', // Bind to localhost
     allowedHosts: true,
     proxy: process.env.VITE_API_URL ? {
       '/api': {
