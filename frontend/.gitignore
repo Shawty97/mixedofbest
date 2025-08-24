@@ -155,3 +155,4 @@ dist-ssr/
 # Supabase
 .branches
 .temp
+.vercel
