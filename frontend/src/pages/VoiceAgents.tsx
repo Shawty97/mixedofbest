@@ -1,33 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mic, Phone, Settings, PlayCircle, MessageSquare, Bot } from 'lucide-react';
+import { Mic, Phone, Settings, PlayCircle, MessageSquare, Bot, Loader2 } from 'lucide-react';
 import VoiceChatInterface from '@/components/voice/VoiceChatInterface';
+import { apiService, Agent } from '@/services/apiService';
+import { useToast } from '@/hooks/use-toast';
 
 const VoiceAgents: React.FC = () => {
+  const { toast } = useToast();
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const agents = [
-    {
-      id: 'customer-support',
-      name: 'Customer Support Agent',
-      description: 'Handles customer inquiries and support requests',
-      voiceProfile: 'customer_service'
-    },
-    {
-      id: 'sales-assistant',
-      name: 'Sales Assistant',
-      description: 'Helps with product information and sales',
-      voiceProfile: 'professional_female'
-    },
-    {
-      id: 'technical-expert',
-      name: 'Technical Expert',
-      description: 'Provides technical support and guidance',
-      voiceProfile: 'technical_expert'
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  const loadAgents = async () => {
+    try {
+      setLoading(true);
+      const agentList = await apiService.getAgents();
+      setAgents(agentList);
+    } catch (error) {
+      console.error('Error loading agents:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load voice agents",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,7 +55,7 @@ const VoiceAgents: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">
-                  Chatting with {agents.find(a => a.id === activeAgent)?.name}
+                  Chatting with {agents.find(a => (a._id || a.agent_id) === activeAgent)?.name}
                 </h2>
                 <Button 
                   variant="outline" 
@@ -61,34 +66,65 @@ const VoiceAgents: React.FC = () => {
               </div>
               <VoiceChatInterface
                 agentId={activeAgent}
-                agentName={agents.find(a => a.id === activeAgent)?.name}
-                voiceProfile={agents.find(a => a.id === activeAgent)?.voiceProfile}
+                agentName={agents.find(a => (a._id || a.agent_id) === activeAgent)?.name}
+                voiceProfile={agents.find(a => (a._id || a.agent_id) === activeAgent)?.voice_provider || 'default'}
               />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {agents.map((agent) => (
-                <Card key={agent.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bot className="h-5 w-5" />
-                      {agent.name}
-                    </CardTitle>
-                    <CardDescription>
-                      {agent.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => setActiveAgent(agent.id)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Start Chat
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {loading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <span className="ml-2">Loading voice agents...</span>
+                </div>
+              ) : agents.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <Bot className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Voice Agents Found</h3>
+                  <p className="text-muted-foreground mb-4">Create your first voice agent to get started</p>
+                  <Button onClick={() => window.location.href = '/agent-studio'}>Create Agent</Button>
+                </div>
+              ) : (
+                agents.map((agent) => (
+                  <Card key={agent._id || agent.agent_id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bot className="h-5 w-5" />
+                        {agent.name}
+                      </CardTitle>
+                      <CardDescription>
+                        {agent.description || 'Voice-enabled AI assistant'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Type:</span>
+                          <span>{agent.type || 'Voice Agent'}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Status:</span>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            agent.status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {agent.status}
+                          </span>
+                        </div>
+                      </div>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => setActiveAgent(agent._id || agent.agent_id)}
+                        disabled={agent.status !== 'active'}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Start Chat
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           )}
         </TabsContent>

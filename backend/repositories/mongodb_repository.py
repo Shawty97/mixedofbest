@@ -393,5 +393,46 @@ class MongoDBRepository:
             logger.error(f"Failed to add message to session {session_id}: {e}")
             return False
 
+    def _convert_objectid(self, doc: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert ObjectId to string"""
+        if doc and "_id" in doc:
+            doc["_id"] = str(doc["_id"])
+        return doc
+
+    async def get_workflows(self):
+        """Get all workflows"""
+        try:
+            workflows = await self.workflows_collection.find({}).to_list(length=None)
+            return [self._convert_objectid(workflow) for workflow in workflows]
+        except Exception as e:
+            logger.error(f"Error getting workflows: {e}")
+            return []
+
+    async def get_conversations(self):
+        """Get all conversations"""
+        try:
+            conversations = await self.sessions_collection.find({}).sort("created_at", -1).to_list(length=None)
+            return [self._convert_objectid(conversation) for conversation in conversations]
+        except Exception as e:
+            logger.error(f"Error getting conversations: {e}")
+            return []
+
+    async def get_recent_conversations(self, limit: int = 5):
+        """Get recent conversations"""
+        try:
+            conversations = await self.sessions_collection.find({}).sort("created_at", -1).limit(limit).to_list(length=None)
+            return [self._convert_objectid(conversation) for conversation in conversations]
+        except Exception as e:
+            logger.error(f"Error getting recent conversations: {e}")
+            return []
+
+    async def count_agents(self):
+        """Count total agents"""
+        try:
+            return await self.agents_collection.count_documents({})
+        except Exception as e:
+            logger.error(f"Error counting agents: {e}")
+            return 0
+
 # Global repository instance
 mongodb_repository = MongoDBRepository()

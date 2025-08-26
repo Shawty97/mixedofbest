@@ -1,8 +1,9 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   Brain, 
   Bot, 
@@ -14,32 +15,73 @@ import {
   Users,
   Zap,
   ArrowRight,
-  Plus
-} from "lucide-react";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { Link } from "react-router-dom";
+  Plus,
+  BarChart3,
+  AlertCircle,
+  Play,
+  Settings
+} from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { Link } from 'react-router-dom';
+import { apiService, Agent, Workflow as WorkflowType, Task } from '@/services/apiService';
 
-export default function Dashboard() {
+const Dashboard = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalAgents: 0,
+    activeAgents: 0,
+    totalWorkflows: 0,
+    completedTasks: 0,
+    totalTasks: 0,
+    totalSessions: 0,
+    activeWorkflows: 0,
+    activeSessions: 0
+  });
+  const [recentWorkflows, setRecentWorkflows] = useState<WorkflowType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = [
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [dashboardStats, workflows] = await Promise.all([
+          apiService.getDashboardStats(),
+          apiService.getWorkflows()
+        ]);
+        
+        setStats(dashboardStats);
+        setRecentWorkflows(workflows.slice(0, 4)); // Show only first 4 workflows
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const statsDisplay = [
     {
       title: "Active Workflows",
-      value: "12",
+      value: stats.activeWorkflows.toString(),
       change: "+2 this week",
       icon: Workflow,
       trend: "up"
     },
     {
       title: "AI Agents",
-      value: "8",
+      value: stats.totalAgents.toString(),
       change: "+3 this month",
       icon: Bot,
       trend: "up"
     },
     {
       title: "Executions",
-      value: "1,247",
+      value: stats.completedTasks.toString(),
       change: "+12% from last month",
       icon: Zap,
       trend: "up"
@@ -51,13 +93,6 @@ export default function Dashboard() {
       icon: CheckCircle,
       trend: "up"
     }
-  ];
-
-  const recentWorkflows = [
-    { id: 1, name: "Customer Support Automation", status: "active", lastRun: "2 minutes ago", executions: 145 },
-    { id: 2, name: "Data Processing Pipeline", status: "paused", lastRun: "1 hour ago", executions: 89 },
-    { id: 3, name: "Content Generation Flow", status: "active", lastRun: "15 minutes ago", executions: 203 },
-    { id: 4, name: "Email Classification", status: "active", lastRun: "5 minutes ago", executions: 67 }
   ];
 
   const quickActions = [
@@ -87,25 +122,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.change}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading dashboard...</div>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-red-600">{error}</div>
+        </div>
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {statsDisplay.map((stat) => (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.change}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Workflows */}
@@ -118,30 +163,45 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentWorkflows.map((workflow) => (
-                <div key={workflow.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-quantum-600 to-neural-600 flex items-center justify-center">
-                      <Workflow className="h-4 w-4 text-white" />
+              {recentWorkflows.map((workflow) => {
+                const statusColor = workflow.status === 'active' ? 'bg-green-500' : 
+                                  workflow.status === 'completed' ? 'bg-blue-500' : 
+                                  workflow.status === 'pending' ? 'bg-yellow-500' : 'bg-gray-500';
+                const progress = workflow.status === 'completed' ? 100 : 
+                               workflow.status === 'active' ? 75 : 
+                               workflow.status === 'pending' ? 25 : 0;
+                
+                return (
+                  <div key={workflow._id || workflow.workflow_id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-quantum-600 to-neural-600 flex items-center justify-center">
+                        <Workflow className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{workflow.name}</h4>
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>Status: {workflow.status}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium">{workflow.name}</h4>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>Last run: {workflow.lastRun}</span>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={workflow.status === 'active' ? 'default' : 'secondary'}>
+                        {workflow.status}
+                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Progress value={progress} className="w-20" />
+                        <span className="text-sm text-muted-foreground">{progress}%</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={workflow.status === 'active' ? 'default' : 'secondary'}>
-                      {workflow.status}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {workflow.executions} runs
-                    </span>
-                  </div>
+                );
+              })}
+              {recentWorkflows.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No workflows found. Create your first workflow to get started.
                 </div>
-              ))}
+              )}
             </div>
             <div className="mt-4">
               <Button variant="outline" className="w-full" asChild>
@@ -179,6 +239,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+        </>
+      )}
 
       {/* System Status */}
       <Card>
@@ -216,4 +278,6 @@ export default function Dashboard() {
       </Card>
     </div>
   );
-}
+};
+
+export default Dashboard;

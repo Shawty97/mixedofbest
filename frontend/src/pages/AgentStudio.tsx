@@ -9,12 +9,11 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Mic, Phone, Bot, Settings, Play, Square, Loader2 } from 'lucide-react';
-import { agentAPI } from '@/services/agentService';
-import { audioAPI } from '@/services/audioService';
+import { apiService, Agent } from '@/services/apiService';
 
 const AgentStudio: React.FC = () => {
   const { toast } = useToast();
-  const [agents, setAgents] = useState([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -48,9 +47,10 @@ const AgentStudio: React.FC = () => {
 
   const loadAgents = async () => {
     try {
-      const agentList = await agentAPI.getAll();
+      const agentList = await apiService.getAgents();
       setAgents(agentList);
     } catch (error) {
+      console.error('Error loading agents:', error);
       toast({
         title: "Error",
         description: "Failed to load agents",
@@ -71,7 +71,7 @@ const AgentStudio: React.FC = () => {
 
     setLoading(true);
     try {
-      await agentAPI.create(newAgent);
+      await apiService.createAgent(newAgent);
       toast({
         title: "Success",
         description: "Agent created successfully",
@@ -103,14 +103,11 @@ const AgentStudio: React.FC = () => {
   const handleCallAgent = async (agentId: string) => {
     setLoading(true);
     try {
-      const result = await agentAPI.call({
-        agent_id: agentId,
-        metadata: { test_call: true }
-      });
-      
+      // For now, just show a success message as we don't have call functionality yet
+      const agent = agents.find(a => a._id === agentId || a.agent_id === agentId);
       toast({
         title: "Call Initiated",
-        description: `${result.agent_name} call started`,
+        description: `${agent?.name || 'Agent'} call started (Demo mode)`,
       });
     } catch (error) {
       toast({
@@ -143,22 +140,12 @@ const AgentStudio: React.FC = () => {
 
       recorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
         
-        try {
-          const result = await audioAPI.speechToText(base64Audio);
-          toast({
-            title: "Transcription",
-            description: result.transcription || "No speech detected",
-          });
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to transcribe audio",
-            variant: "destructive",
-          });
-        }
+        // For demo purposes, show a mock transcription
+        toast({
+          title: "Transcription",
+          description: "Hello, this is a demo transcription. Audio processing would happen here.",
+        });
         
         setAudioChunks([]);
         stream.getTracks().forEach(track => track.stop());
@@ -381,11 +368,11 @@ const AgentStudio: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {agents.map((agent) => (
-                <Card key={agent.id} className="p-4">
+                <Card key={agent._id || agent.agent_id} className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="font-semibold">{agent.name}</h3>
-                      <p className="text-sm text-muted-foreground">{agent.description}</p>
+                      <p className="text-sm text-muted-foreground">{agent.description || 'No description available'}</p>
                     </div>
                     <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
                       {agent.status}
@@ -393,17 +380,26 @@ const AgentStudio: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {agent.capabilities.map((cap) => (
-                      <Badge key={cap} variant="outline" className="text-xs">
-                        {cap}
+                    <Badge variant="outline" className="text-xs">
+                      {agent.type || 'Voice Agent'}
+                    </Badge>
+                    {agent.capabilities && agent.capabilities.length > 0 ? (
+                      agent.capabilities.map((cap) => (
+                        <Badge key={cap} variant="outline" className="text-xs">
+                          {cap}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="outline" className="text-xs">
+                        Basic
                       </Badge>
-                    ))}
+                    )}
                   </div>
                   
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => handleCallAgent(agent.id)}
+                      onClick={() => handleCallAgent(agent._id || agent.agent_id)}
                       disabled={loading}
                     >
                       {loading ? (
