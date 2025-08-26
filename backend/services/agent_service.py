@@ -3,15 +3,16 @@ Agent Service for Universal Agent Platform
 Manages voice agents, their lifecycle, and configurations
 """
 import asyncio
+import uuid
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-import uuid
+
 from .ai_service import ai_service
 from .voice_service import voice_service
 from .livekit_service import livekit_service
-from .agent_repository import agent_repository
 from .session_service import session_service
+from repositories.mongodb_repository import mongodb_repository
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +127,20 @@ class AgentService:
             agent.ai_session_id = ai_session_id
             agent.status = "ready"
             self.active_agents[agent_id] = agent
+            
+            # Save to MongoDB
+            await mongodb_repository.create_agent({
+                "agent_id": agent_id,
+                "agent_type": agent_type,
+                "name": name,
+                "config": template,
+                "ai_session_id": ai_session_id,
+                "status": "ready",
+                "created_at": datetime.utcnow(),
+                "last_activity": datetime.utcnow(),
+                "conversation_count": 0
+            })
+            
             logger.info(f"Created voice agent: {agent_id} ({agent_type})")
             return agent_id
         except Exception as e:

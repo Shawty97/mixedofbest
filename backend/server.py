@@ -25,8 +25,12 @@ from api.studio import router as studio_router
 from api.access import router as access_router
 from api.analytics import router as analytics_router
 from api.payments import router as payments_router
+from api.workflows import router as workflows_router
+from api.tasks import router as tasks_router
+from api.sessions import router as sessions_router
 from middleware.auth import require_api_key
 from api.uam import router as uam_router
+from repositories.mongodb_repository import mongodb_repository
 
 app = FastAPI(
     title="AImpact Platform API",
@@ -58,6 +62,9 @@ async def startup_db_client():
         client = AsyncIOMotorClient(mongo_url)
         db = client[db_name]
         
+        # Initialize mongodb_repository
+        await mongodb_repository.connect()
+        
         # Test connection
         await client.admin.command("ping")
         logger.info(f"Connected to MongoDB: {db_name}")
@@ -72,6 +79,9 @@ async def shutdown_db_client():
     if client:
         client.close()
         logger.info("MongoDB connection closed")
+    
+    # Disconnect mongodb_repository
+    await mongodb_repository.disconnect()
 
 # Include API routers with API key dependency (soft-enforced if keys exist)
 app.include_router(access_router)  # allow bootstrap without key
@@ -80,6 +90,9 @@ app.include_router(agents_router, dependencies=[Depends(require_api_key)])
 app.include_router(voice_router, dependencies=[Depends(require_api_key)])
 app.include_router(rooms_router, dependencies=[Depends(require_api_key)])
 app.include_router(studio_router, dependencies=[Depends(require_api_key)])
+app.include_router(workflows_router, dependencies=[Depends(require_api_key)])
+app.include_router(tasks_router, dependencies=[Depends(require_api_key)])
+app.include_router(sessions_router, dependencies=[Depends(require_api_key)])
 app.include_router(payments_router, prefix="/api/payments", tags=["payments"])
 app.include_router(uam_router)  # read-only, safe
 

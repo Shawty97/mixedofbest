@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Any
 import base64
 
 from services.agent_service import agent_service
+from repositories.mongodb_repository import mongodb_repository
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
 
@@ -52,8 +53,8 @@ async def create_agent(request: CreateAgentRequest):
 
 @router.get("", response_model=List[Dict[str, Any]])
 async def list_agents():
-    """Get all active agents"""
-    agents = agent_service.get_all_agents()
+    """Get all agents from database"""
+    agents = await mongodb_repository.list_agents()
     return agents
 
 @router.get("/{agent_id}")
